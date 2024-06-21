@@ -20,4 +20,8 @@ public class UserDirectoryServiceImpl implements UserDirectoryService {
     public boolean checkIsUserExist(String login) {
         return userDirectory.isLoginExist(login);
     }
+
+    public UserDirectory getUserDirectory() {
+        return userDirectory;
+    }
 }

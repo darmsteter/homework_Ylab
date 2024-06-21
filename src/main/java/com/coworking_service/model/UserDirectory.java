@@ -21,4 +21,8 @@ public class UserDirectory {
                 .map(mapOfUsers::get)
                 .orElseThrow(() -> new NoSuchUserExistsException(login));
     }
+
+    public void addNewUser(String loin, User user) {
+        mapOfUsers.put(user.login(), user);
+    }
 }
