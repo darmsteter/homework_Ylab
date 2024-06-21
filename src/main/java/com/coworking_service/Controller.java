@@ -5,6 +5,7 @@ import com.coworking_service.model.User;
 import com.coworking_service.model.UserDirectory;
 import com.coworking_service.model.enums.Commands;
 import com.coworking_service.model.enums.MessageType;
+import com.coworking_service.model.enums.Role;
 import com.coworking_service.service.UserDirectoryServiceImpl;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
@@ -15,7 +16,7 @@ public class Controller {
 
     private final UserDirectoryService userDirectoryService = new UserDirectoryServiceImpl(
             new UserDirectory(
-                    new User("admin", "admin")
+                    new User("admin", "admin", Role.ADMINISTRATOR)
             )
     );
 
@@ -24,27 +25,30 @@ public class Controller {
 
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
-        greetings(scan);
+        String onlineUserLogin = greetings(scan);
+
+        User onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
     }
 
-    public void greetings(Scanner scan) {
-        boolean isUserOnline = false;
+    public String greetings(Scanner scan) {
+        String onlineUserLogin = "";
 
-        while (!isUserOnline) {
+        while (onlineUserLogin.isEmpty()) {
             ConsoleUtil.printMessage(MessageType.GREETINGS);
             String greetings = scan.nextLine();
             if (greetings.equalsIgnoreCase(Commands.REGISTRATION.getCommand())) {
                 registration(scan);
             } else if (greetings.equalsIgnoreCase(Commands.LOG_IN.getCommand())) {
-                isUserOnline = logIn(scan);
+                onlineUserLogin = logIn(scan);
 
             } else {
                 ConsoleUtil.printMessage(MessageType.WRONG_COMMAND);
             }
         }
+        return onlineUserLogin;
     }
 
-    public boolean logIn(Scanner scan) throws NoSuchUserExistsException {
+    public String logIn(Scanner scan) throws NoSuchUserExistsException {
         ConsoleUtil.printMessage(MessageType.START_PAGE);
         ConsoleUtil.printMessage(MessageType.LOGIN);
 
@@ -70,7 +74,7 @@ public class Controller {
                         }
                         ConsoleUtil.printMessage(MessageType.ENTRANCE);
                         System.out.println(currentUser.login());
-                        return true;
+                        return currentUser.login();
                     } else {
                         if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
                             break;
@@ -84,7 +88,7 @@ public class Controller {
                 ConsoleUtil.printMessage(MessageType.ENTRANCE_LOGIN_ERROR);
             }
         }
-        return false;
+        return "";
     }
 
     public void registration(Scanner scan) {
@@ -115,7 +119,7 @@ public class Controller {
                     break;
                 }
 
-                userDirectoryService.getUserDirectory().addNewUser(login, new User(login, password));
+                userDirectoryService.getUserDirectory().addNewUser(login, new User(login, password, Role.USER));
 
                 ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
             }
