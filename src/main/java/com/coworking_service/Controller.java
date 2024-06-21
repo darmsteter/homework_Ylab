@@ -23,38 +23,46 @@ public class Controller {
             )
     );
 
+    private final Scanner scan = new Scanner(System.in);
+
     /**
      * Запускает консольное приложение.
      */
     public void console() {
-        Scanner scan = new Scanner(System.in);
-
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
-        String onlineUserLogin = greetings(scan);
+        String onlineUserLogin = greeting();
 
-        User onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
+        User onlineUser;
+        try {
+            onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
+        } catch (NoSuchUserExistsException e) {
+            ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
+        }
     }
 
     /**
      * Приветствие пользователя и вход в систему или регистрация.
      *
-     * @param scan объект Scanner для ввода пользователя
      * @return логин онлайн пользователя
      */
-    public String greetings(Scanner scan) {
+    private String greeting() {
         String onlineUserLogin = "";
 
         while (onlineUserLogin.isEmpty()) {
             ConsoleUtil.printMessage(MessageType.INSTRUCTIONS);
-            String greetings = scan.nextLine();
-            if (greetings.equalsIgnoreCase(Commands.REGISTRATION.getCommand())) {
-                registration(scan);
-            } else if (greetings.equalsIgnoreCase(Commands.LOG_IN.getCommand())) {
-                onlineUserLogin = logIn(scan);
+            String userResponse = ConsoleUtil.getInput(scan);
 
-            } else {
-                ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+            switch (userResponse.toUpperCase()) {
+                case "R":
+                    registration();
+                    break;
+                case "L":
+                    onlineUserLogin = logIn();
+                    break;
+                default:
+                    ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                    break;
             }
         }
         return onlineUserLogin;
@@ -63,90 +71,75 @@ public class Controller {
     /**
      * Вход пользователя в систему.
      *
-     * @param scan объект Scanner для ввода пользователя
      * @return логин пользователя
      * @throws NoSuchUserExistsException если пользователь с указанным логином не найден
      */
-    public String logIn(Scanner scan) throws NoSuchUserExistsException {
+    private String logIn() throws NoSuchUserExistsException {
         ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
         ConsoleUtil.printMessage(MessageType.PROMPT_LOGIN);
 
-        boolean correctLogin = false;
+        String login = ConsoleUtil.getInput(scan);
+        if (login.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
+            return "";
+        }
+        if (userDirectoryService.checkIsUserExist(login)) {
+            User currentUser = userDirectoryService.findUserByLogin(login);
 
-        while (!correctLogin) {
-            String login = scan.nextLine();
-            if (login.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
-                break;
-            }
-            if (userDirectoryService.checkIsUserExist(login)) {
-                correctLogin = true;
-                User currentUser = userDirectoryService.findUserByLogin(login);
+            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+            ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
 
-                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-                ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
-                while (true) {
-                    String password = scan.nextLine();
+            while (true) {
+                String password = ConsoleUtil.getInput(scan);
 
-                    if (password.equals(currentUser.password())) {
-                        if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
-                            break;
-                        }
-                        ConsoleUtil.printMessage(MessageType.WELCOME_USER);
-                        System.out.println(currentUser.login());
-                        return currentUser.login();
-                    } else {
-                        if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
-                            break;
-                        }
-                        ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-                        ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
-                    }
+                if (password.equals(currentUser.password())) {
+                    ConsoleUtil.printMessage(MessageType.WELCOME_USER);
+                    System.out.println(currentUser.login());
+                    return currentUser.login();
+                } else if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
+                    return "";
+                } else {
+                    ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+                    ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
                 }
-            } else {
-                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-                ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
             }
+        } else {
+            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+            ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
         }
         return "";
     }
 
     /**
      * Регистрация нового пользователя.
-     *
-     * @param scan объект Scanner для ввода пользователя
      */
-    public void registration(Scanner scan) {
+    public void registration() {
         ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
         ConsoleUtil.printMessage(MessageType.PROMPT_LOGIN);
 
-        boolean correctLogin = false;
+        String login = ConsoleUtil.getInput(scan);
 
-        while (!correctLogin) {
-            String login = scan.nextLine();
+        if (login.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
+            return;
+        }
 
-            if (login.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
-                break;
+        if (userDirectoryService.checkIsUserExist(login)) {
+            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+            ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
+        } else {
+            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+            ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
+
+            String password = ConsoleUtil.getInput(scan);
+
+            if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
+                return;
             }
 
-            if (userDirectoryService.checkIsUserExist(login)) {
-                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-                ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
-            } else {
-                correctLogin = true;
+            userDirectoryService.userDirectory().addNewUser(
+                    login, new User(login, password, Role.USER)
+            );
 
-                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-                ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
-
-                String password = scan.nextLine();
-
-                if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
-                    break;
-                }
-
-                userDirectoryService.userDirectory().addNewUser(login, new User(login, password, Role.USER));
-
-                ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
-            }
+            ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
         }
     }
 }
