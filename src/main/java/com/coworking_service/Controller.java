@@ -12,6 +12,9 @@ import com.coworking_service.util.ConsoleUtil;
 
 import java.util.Scanner;
 
+/**
+ * Контроллер для управления консольным интерфейсом приложения коворкинг-сервиса.
+ */
 public class Controller {
 
     private final UserDirectoryService userDirectoryService = new UserDirectoryServiceImpl(
@@ -20,6 +23,9 @@ public class Controller {
             )
     );
 
+    /**
+     * Запускает консольное приложение.
+     */
     public void console() {
         Scanner scan = new Scanner(System.in);
 
@@ -30,11 +36,17 @@ public class Controller {
         User onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
     }
 
+    /**
+     * Приветствие пользователя и вход в систему или регистрация.
+     *
+     * @param scan объект Scanner для ввода пользователя
+     * @return логин онлайн пользователя
+     */
     public String greetings(Scanner scan) {
         String onlineUserLogin = "";
 
         while (onlineUserLogin.isEmpty()) {
-            ConsoleUtil.printMessage(MessageType.GREETINGS);
+            ConsoleUtil.printMessage(MessageType.INSTRUCTIONS);
             String greetings = scan.nextLine();
             if (greetings.equalsIgnoreCase(Commands.REGISTRATION.getCommand())) {
                 registration(scan);
@@ -42,15 +54,22 @@ public class Controller {
                 onlineUserLogin = logIn(scan);
 
             } else {
-                ConsoleUtil.printMessage(MessageType.WRONG_COMMAND);
+                ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
             }
         }
         return onlineUserLogin;
     }
 
+    /**
+     * Вход пользователя в систему.
+     *
+     * @param scan объект Scanner для ввода пользователя
+     * @return логин пользователя
+     * @throws NoSuchUserExistsException если пользователь с указанным логином не найден
+     */
     public String logIn(Scanner scan) throws NoSuchUserExistsException {
-        ConsoleUtil.printMessage(MessageType.START_PAGE);
-        ConsoleUtil.printMessage(MessageType.LOGIN);
+        ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+        ConsoleUtil.printMessage(MessageType.PROMPT_LOGIN);
 
         boolean correctLogin = false;
 
@@ -63,8 +82,8 @@ public class Controller {
                 correctLogin = true;
                 User currentUser = userDirectoryService.findUserByLogin(login);
 
-                ConsoleUtil.printMessage(MessageType.START_PAGE);
-                ConsoleUtil.printMessage(MessageType.PASSWORD);
+                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+                ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
                 while (true) {
                     String password = scan.nextLine();
 
@@ -72,28 +91,33 @@ public class Controller {
                         if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
                             break;
                         }
-                        ConsoleUtil.printMessage(MessageType.ENTRANCE);
+                        ConsoleUtil.printMessage(MessageType.WELCOME_USER);
                         System.out.println(currentUser.login());
                         return currentUser.login();
                     } else {
                         if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
                             break;
                         }
-                        ConsoleUtil.printMessage(MessageType.START_PAGE);
-                        ConsoleUtil.printMessage(MessageType.ENTRANCE_PASSWORD_ERROR);
+                        ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+                        ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
                     }
                 }
             } else {
-                ConsoleUtil.printMessage(MessageType.START_PAGE);
-                ConsoleUtil.printMessage(MessageType.ENTRANCE_LOGIN_ERROR);
+                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+                ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
             }
         }
         return "";
     }
 
+    /**
+     * Регистрация нового пользователя.
+     *
+     * @param scan объект Scanner для ввода пользователя
+     */
     public void registration(Scanner scan) {
-        ConsoleUtil.printMessage(MessageType.START_PAGE);
-        ConsoleUtil.printMessage(MessageType.LOGIN);
+        ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+        ConsoleUtil.printMessage(MessageType.PROMPT_LOGIN);
 
         boolean correctLogin = false;
 
@@ -105,13 +129,13 @@ public class Controller {
             }
 
             if (userDirectoryService.checkIsUserExist(login)) {
-                ConsoleUtil.printMessage(MessageType.START_PAGE);
-                ConsoleUtil.printMessage(MessageType.ENTRANCE_LOGIN_REPEAT);
+                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+                ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
             } else {
                 correctLogin = true;
 
-                ConsoleUtil.printMessage(MessageType.START_PAGE);
-                ConsoleUtil.printMessage(MessageType.PASSWORD);
+                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+                ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
 
                 String password = scan.nextLine();
 
@@ -119,7 +143,7 @@ public class Controller {
                     break;
                 }
 
-                userDirectoryService.getUserDirectory().addNewUser(login, new User(login, password, Role.USER));
+                userDirectoryService.userDirectory().addNewUser(login, new User(login, password, Role.USER));
 
                 ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
             }
