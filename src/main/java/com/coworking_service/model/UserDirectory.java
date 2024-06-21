@@ -22,7 +22,7 @@ public class UserDirectory {
                 .orElseThrow(() -> new NoSuchUserExistsException(login));
     }
 
-    public void addNewUser(String loin, User user) {
-        mapOfUsers.put(user.login(), user);
+    public void addNewUser(String login, User user) {
+        mapOfUsers.put(login, user);
     }
 }
