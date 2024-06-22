@@ -39,9 +39,8 @@ public class CoworkingSpace {
      * Возвращает все индивидуальные рабочие места с их слотами на указанную дату.
      *
      * @param date дата, для которой необходимо получить слоты
-     * @return строковое представление состояния рабочих мест на указанную дату
      */
-    public String getIndividualWorkplacesSlotsByDate(LocalDate date) {
+    public void getIndividualWorkplacesSlotsByDate(LocalDate date) {
         StringBuilder result = new StringBuilder();
         for (Map.Entry<IndividualWorkplace, Map<String, Slot>> entry : individualWorkplaces.entrySet()) {
             result.append("Рабочее место #").append(entry.getKey().getWorkplaceID()).append(" ");
@@ -59,16 +58,15 @@ public class CoworkingSpace {
                 slots.put(date.toString(), new Slot(date));
             }
         }
-        return result.toString();
+        System.out.println(result);
     }
 
     /**
      * Возвращает все конференц-залы с их слотами на указанную дату.
      *
      * @param date дата, для которой необходимо получить слоты
-     * @return строковое представление состояния конференц-залов на указанную дату
      */
-    public String getConferenceRoomsSlotsByDate(LocalDate date) {
+    public void getConferenceRoomsSlotsByDate(LocalDate date) {
         StringBuilder result = new StringBuilder();
         for (Map.Entry<ConferenceRoom, Map<String, Slot>> entry : conferenceRooms.entrySet()) {
             result.append("Конференц-зал #").append(entry.getKey().getWorkplaceID()).append(" ");
@@ -86,7 +84,7 @@ public class CoworkingSpace {
                 slots.put(date.toString(), new Slot(date));
             }
         }
-        return result.toString();
+        System.out.println(result);
     }
 
     /**

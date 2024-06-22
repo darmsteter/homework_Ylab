@@ -23,7 +23,7 @@ public class UserOutputHandler {
         }
     }
 
-    public void greetingsForUser(User onlineUser) {
+    private void greetingsForUser(User onlineUser) {
         ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
         String userResponse = ConsoleUtil.getInput(scan);
 
@@ -59,8 +59,8 @@ public class UserOutputHandler {
         ConsoleUtil.printMessage(MessageType.DATE);
         String dateInput = ConsoleUtil.getInput(scan);
         LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
-        System.out.println(coworkingSpace.getIndividualWorkplacesSlotsByDate(date));
-        System.out.println(coworkingSpace.getConferenceRoomsSlotsByDate(date));
+        coworkingSpace.getIndividualWorkplacesSlotsByDate(date);
+        coworkingSpace.getConferenceRoomsSlotsByDate(date);
 
     }
 
