@@ -1,10 +1,13 @@
-# homework_Ylab
-Домашние работы, выполненные в рамках прохождения обучения на [платформе Ylab](https://learning-platform.ylab.website/my-homeworks/26). 
+Для сборки приложения:
+`./gradlew jar`
 
-Homework assignments completed as part of the training on the [Ylab platform](https://learning-platform.ylab.website/my-homeworks/26).
-***
-1. homework #1
-2. homework #2
-3. homework #3
-4. homework #4
-5. homework #5
+Для запуска приложения
+`java -cp build/libs/homework_Ylab.jar com.coworking_service.Main`
+
+Профиль с правами администратора: 
+login: `admin`
+password: `admin`
+
+Стек:
+java 17.0
+Система сборки gradle
