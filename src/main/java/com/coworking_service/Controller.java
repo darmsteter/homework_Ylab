@@ -21,13 +21,18 @@ public class Controller {
             )
     );
 
-    private final UserInputHandler userInputHandler = new UserInputHandler(userDirectoryService);
-    private final UserOutputHandler userOutputHandler = new UserOutputHandler(userDirectoryService);
+    private final CoworkingSpace coworkingSpace = new CoworkingSpace();
+
+    private final UserInputHandler userInputHandler = new UserInputHandler(userDirectoryService, coworkingSpace);
+    private final UserOutputHandler userOutputHandler = new UserOutputHandler(userDirectoryService, coworkingSpace);
 
     /**
      * Запускает консольное приложение.
      */
     public void console() {
+        coworkingSpace.addConferenceRoom(10);
+        coworkingSpace.addIndividualWorkplace();
+        coworkingSpace.addIndividualWorkplace();
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
         String onlineUserLogin = userInputHandler.greeting();

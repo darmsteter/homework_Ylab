@@ -126,6 +126,70 @@ public class CoworkingSpace {
 
         System.out.println(result);
     }
+
+    /**
+     * Ищет индивидуальное рабочее место по его ID.
+     *
+     * @param workplaceID ID индивидуального рабочего места для поиска
+     * @return найденное индивидуальное рабочее место или null, если не найдено
+     */
+    public IndividualWorkplace findIndividualWorkplaceById(int workplaceID) {
+        for (IndividualWorkplace workplace : individualWorkplaces.keySet()) {
+            if (workplace.getWorkplaceID() == workplaceID) {
+                return workplace;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Ищет конференц-зал по его ID.
+     *
+     * @param workplaceID ID конференц-зала для поиска
+     * @return найденный конференц-зал или null, если не найден
+     */
+    public ConferenceRoom findConferenceRoomById(int workplaceID) {
+        for (ConferenceRoom room : conferenceRooms.keySet()) {
+            if (room.getWorkplaceID() == workplaceID) {
+                return room;
+            }
+        }
+        return null;
+    }
+
+    public String[] reserveSlots(Workplace workplace, Map<String, Slot> slots, int workplaceID, LocalDate date, int slotNumber, int numberOfSlots) {
+        if (workplace.getWorkplaceID() == workplaceID) {
+            if (slots.containsKey(date.toString())) {
+                Slot slot = slots.get(date.toString());
+                String[] reservedSlots = new String[numberOfSlots];
+
+                for (int i = 0; i < numberOfSlots; i++) {
+                    int slotIndex = slotNumber - 1 + i;
+                    if (slotIndex < slot.getSlots().length) {
+                        Pair<String, Boolean> pair = slot.getSlots()[slotIndex];
+                        if (pair != null && pair.getValue()) {
+                            slot.setSlotAvailability(slotIndex, false);
+                            reservedSlots[i] = pair.getKey();
+                        } else {
+                            System.out.println("Слот " + (slotIndex + 1) + " уже занят или не существует.");
+                            return null;
+                        }
+                    } else {
+                        System.out.println("Слот с номером " + (slotIndex + 1) + " не существует.");
+                        return null;
+                    }
+                }
+                System.out.println("Слоты успешно зарезервированы.");
+                return reservedSlots;
+            } else {
+                System.out.println("Для указанной даты " + date + " нет зарегистрированных слотов.");
+                return null;
+            }
+        } else {
+            System.out.println("Рабочее место или конференц-зал с ID " + workplaceID + " не найдено.");
+            return null;
+        }
+    }
 }
 
 

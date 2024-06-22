@@ -1,7 +1,7 @@
 package com.coworking_service.in;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
-import com.coworking_service.model.User;
+import com.coworking_service.model.*;
 import com.coworking_service.model.enums.Commands;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
@@ -15,6 +15,7 @@ import java.util.Scanner;
  */
 public class UserInputHandler {
     private final UserDirectoryService userDirectoryService;
+    private final CoworkingSpace coworkingSpace;
     private final Scanner scan = new Scanner(System.in);
 
     /**
@@ -22,8 +23,9 @@ public class UserInputHandler {
      *
      * @param userDirectoryService сервис для работы с пользователями
      */
-    public UserInputHandler(UserDirectoryService userDirectoryService) {
+    public UserInputHandler(UserDirectoryService userDirectoryService, CoworkingSpace coworkingSpace) {
         this.userDirectoryService = userDirectoryService;
+        this.coworkingSpace = coworkingSpace;
     }
 
     /**
