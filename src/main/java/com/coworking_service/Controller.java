@@ -2,10 +2,10 @@ package com.coworking_service;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.in.UserInputHandler;
-import com.coworking_service.model.User;
-import com.coworking_service.model.UserDirectory;
+import com.coworking_service.model.*;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
+import com.coworking_service.out.UserOutputHandler;
 import com.coworking_service.service.UserDirectoryServiceImpl;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
@@ -22,6 +22,7 @@ public class Controller {
     );
 
     private final UserInputHandler userInputHandler = new UserInputHandler(userDirectoryService);
+    private final UserOutputHandler userOutputHandler = new UserOutputHandler();
 
     /**
      * Запускает консольное приложение.
@@ -34,6 +35,8 @@ public class Controller {
         User onlineUser;
         try {
             onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
+            userOutputHandler.greetingsForOnlineUser(onlineUser);
+
         } catch (NoSuchUserExistsException e) {
             ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
         }

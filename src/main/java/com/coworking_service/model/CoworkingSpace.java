@@ -1,40 +1,92 @@
 package com.coworking_service.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Класс, представляющий коворкинг-пространство.
  */
 public class CoworkingSpace {
-    private final List<IndividualWorkplace> individualWorkplaces;
-    private final List<ConferenceRoom> conferenceRooms;
+    private final HashMap<IndividualWorkplace, Map<String, Slot>> individualWorkplaces;
+    private final HashMap<ConferenceRoom, Map<String, Slot>> conferenceRooms;
 
     /**
      * Конструктор для создания коворкинг-пространства.
      */
     public CoworkingSpace() {
-        this.individualWorkplaces = new ArrayList<>();
-        this.conferenceRooms = new ArrayList<>();
+        this.individualWorkplaces = new HashMap<>();
+        this.conferenceRooms = new HashMap<>();
     }
 
     /**
      * Добавляет новое индивидуальное рабочее место.
-     *
-     * @param workplaceID номер рабочего места
      */
-    public void addIndividualWorkplace(int workplaceID) {
-        individualWorkplaces.add(new IndividualWorkplace(workplaceID));
+    public void addIndividualWorkplace() {
+        individualWorkplaces.put(new IndividualWorkplace(individualWorkplaces.size()), new HashMap<>());
     }
 
     /**
      * Добавляет новый конференц-зал.
      *
-     * @param workplaceID номер конференц-зала.
      * @param maximumCapacity максимальная вместимость конференц-зала
      */
-    public void addConferenceRoom(int workplaceID, int maximumCapacity) {
-        conferenceRooms.add(new ConferenceRoom(workplaceID, maximumCapacity));
+    public void addConferenceRoom(int maximumCapacity) {
+        conferenceRooms.put(new ConferenceRoom(conferenceRooms.size(), maximumCapacity), new HashMap<>());
+    }
+
+    /**
+     * Возвращает все индивидуальные рабочие места с их слотами на указанную дату.
+     *
+     * @param date дата, для которой необходимо получить слоты
+     * @return строковое представление состояния рабочих мест на указанную дату
+     */
+    public String getIndividualWorkplacesSlotsByDate(LocalDate date) {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<IndividualWorkplace, Map<String, Slot>> entry : individualWorkplaces.entrySet()) {
+            result.append("Рабочее место #").append(entry.getKey().getWorkplaceID()).append(" ");
+            Map<String, Slot> slots = entry.getValue();
+            if (slots.containsKey(date)) {
+                result.append("занято. Доступные слоты:\n");
+                Slot slot = slots.get(date);
+                for (Pair<String, Boolean> pair : slot.getSlots()) {
+                    if (pair.getValue()) {
+                        result.append(pair.getKey()).append("\n");
+                    }
+                }
+            } else {
+                result.append("свободно весь день с 8 до 20.\n");
+                slots.put(date.toString(), new Slot(date));
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Возвращает все конференц-залы с их слотами на указанную дату.
+     *
+     * @param date дата, для которой необходимо получить слоты
+     * @return строковое представление состояния конференц-залов на указанную дату
+     */
+    public String getConferenceRoomsSlotsByDate(LocalDate date) {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<ConferenceRoom, Map<String, Slot>> entry : conferenceRooms.entrySet()) {
+            result.append("Конференц-зал #").append(entry.getKey().getWorkplaceID()).append(" ");
+            Map<String, Slot> slots = entry.getValue();
+            if (slots.containsKey(date)) {
+                result.append("занят. Доступные слоты:\n");
+                Slot slot = slots.get(date);
+                for (Pair<String, Boolean> pair : slot.getSlots()) {
+                    if (pair.getValue()) {
+                        result.append(pair.getKey()).append("\n");
+                    }
+                }
+            } else {
+                result.append("свободен весь день с 8 до 20.\n");
+                slots.put(date.toString(), new Slot(date));
+            }
+        }
+        return result.toString();
     }
 
     /**
@@ -42,7 +94,7 @@ public class CoworkingSpace {
      *
      * @return список индивидуальных рабочих мест
      */
-    public List<IndividualWorkplace> getIndividualWorkplaces() {
+    public HashMap<IndividualWorkplace, Map<String, Slot>> getIndividualWorkplaces() {
         return individualWorkplaces;
     }
 
@@ -51,7 +103,7 @@ public class CoworkingSpace {
      *
      * @return список конференц-залов
      */
-    public List<ConferenceRoom> getConferenceRooms() {
+    public HashMap<ConferenceRoom, Map<String, Slot>> getConferenceRooms() {
         return conferenceRooms;
     }
 }
