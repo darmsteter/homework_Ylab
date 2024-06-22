@@ -73,7 +73,7 @@ public class Slot {
         if (index < 0 || index >= slots.length) {
             throw new IllegalArgumentException("Invalid slot index");
         }
-        return slots[index].getValue();
+        return slots[index].value();
     }
 
     /**
@@ -86,6 +86,6 @@ public class Slot {
         if (index < 0 || index >= slots.length) {
             throw new IllegalArgumentException("Invalid slot index");
         }
-        slots[index] = new Pair<>(slots[index].getKey(), available);
+        slots[index] = new Pair<>(slots[index].key(), available);
     }
 }

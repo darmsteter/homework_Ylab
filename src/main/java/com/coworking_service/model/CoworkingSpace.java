@@ -49,8 +49,8 @@ public class CoworkingSpace {
                 result.append("занято. Доступные слоты:\n");
                 Slot slot = slots.get(date);
                 for (Pair<String, Boolean> pair : slot.getSlots()) {
-                    if (pair.getValue()) {
-                        result.append(pair.getKey()).append("\n");
+                    if (pair.value()) {
+                        result.append(pair.key()).append("\n");
                     }
                 }
             } else {
@@ -75,8 +75,8 @@ public class CoworkingSpace {
                 result.append("занят. Доступные слоты:\n");
                 Slot slot = slots.get(date);
                 for (Pair<String, Boolean> pair : slot.getSlots()) {
-                    if (pair.getValue()) {
-                        result.append(pair.getKey()).append("\n");
+                    if (pair.value()) {
+                        result.append(pair.key()).append("\n");
                     }
                 }
             } else {
@@ -106,7 +106,7 @@ public class CoworkingSpace {
     }
 
     /**
-     * Печатает строку с перечислением всех индивидуальных мест и конференц-залов с максимальной вместимостью.
+     * Печатает строку с перечислением всех индивидуальных мест и конференц-залов с их максимальной вместимостью.
      */
     public void printSpaces() {
         StringBuilder result = new StringBuilder();
@@ -157,6 +157,17 @@ public class CoworkingSpace {
         return null;
     }
 
+    /**
+     * Резервирует слоты для рабочего места или конференц-зала на указанную дату.
+     *
+     * @param workplace     объект рабочего места или конференц-зала
+     * @param slots         карта слотов для рабочего места или конференц-зала
+     * @param workplaceID   ID рабочего места или конференц-зала
+     * @param date          дата для бронирования слотов
+     * @param slotNumber    начальный номер слота для бронирования
+     * @param numberOfSlots количество слотов для бронирования
+     * @return массив зарезервированных слотов или null, если бронирование не удалось
+     */
     public String[] reserveSlots(Workplace workplace, Map<String, Slot> slots, int workplaceID, LocalDate date, int slotNumber, int numberOfSlots) {
         if (workplace.getWorkplaceID() == workplaceID) {
             if (slots.containsKey(date.toString())) {
@@ -167,9 +178,9 @@ public class CoworkingSpace {
                     int slotIndex = slotNumber - 1 + i;
                     if (slotIndex < slot.getSlots().length) {
                         Pair<String, Boolean> pair = slot.getSlots()[slotIndex];
-                        if (pair != null && pair.getValue()) {
+                        if (pair != null && pair.value()) {
                             slot.setSlotAvailability(slotIndex, false);
-                            reservedSlots[i] = pair.getKey();
+                            reservedSlots[i] = pair.key();
                         } else {
                             System.out.println("Слот " + (slotIndex + 1) + " уже занят или не существует.");
                             return null;

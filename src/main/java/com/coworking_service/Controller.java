@@ -2,7 +2,9 @@ package com.coworking_service;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.in.UserInputHandler;
-import com.coworking_service.model.*;
+import com.coworking_service.model.CoworkingSpace;
+import com.coworking_service.model.User;
+import com.coworking_service.model.UserDirectory;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
 import com.coworking_service.out.UserOutputHandler;
@@ -46,6 +48,4 @@ public class Controller {
             ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
         }
     }
-
-
 }
