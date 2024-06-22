@@ -22,7 +22,7 @@ public class Controller {
     );
 
     private final UserInputHandler userInputHandler = new UserInputHandler(userDirectoryService);
-    private final UserOutputHandler userOutputHandler = new UserOutputHandler();
+    private final UserOutputHandler userOutputHandler = new UserOutputHandler(userDirectoryService);
 
     /**
      * Запускает консольное приложение.

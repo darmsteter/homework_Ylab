@@ -1,10 +1,12 @@
 package com.coworking_service.out;
 
 import com.coworking_service.Controller;
+import com.coworking_service.in.UserInputHandler;
 import com.coworking_service.model.CoworkingSpace;
 import com.coworking_service.model.User;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
+import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 
 import java.time.LocalDate;
@@ -14,8 +16,16 @@ import java.util.Scanner;
 public class UserOutputHandler {
     private final CoworkingSpace coworkingSpace = new CoworkingSpace();
     private final Scanner scan = new Scanner(System.in);
+    private final UserInputHandler userInputHandler;
+
+    public UserOutputHandler(UserDirectoryService userDirectoryService) {
+        this.userInputHandler = new UserInputHandler(userDirectoryService);
+    }
 
     public void greetingsForOnlineUser(User onlineUser) {
+        coworkingSpace.addConferenceRoom(10);
+        coworkingSpace.addIndividualWorkplace();
+        coworkingSpace.addIndividualWorkplace();
         if (onlineUser.role().equals(Role.ADMINISTRATOR)) {
             greetingsForAdmin(onlineUser);
         } else {
@@ -30,7 +40,14 @@ public class UserOutputHandler {
         switch (userResponse.toUpperCase()) {
             case "D":
                 sortedByDate();
-                break;
+                greetingsForUser(onlineUser);
+            case "L":
+                getSpaces();
+                greetingsForUser(onlineUser);
+            case "E":
+                userInputHandler.greeting();
+            default:
+                greetingsForUser(onlineUser);
         }
     }
 
@@ -41,21 +58,24 @@ public class UserOutputHandler {
         switch (userResponse.toUpperCase()) {
             case "D":
                 sortedByDate();
-                break;
+                greetingsForAdmin(onlineUser);
             case "I":
                 createNewIndividualWorkplace();
-                break;
+                greetingsForAdmin(onlineUser);
             case "C":
                 createNewConferenceRoom();
-                break;
+                greetingsForAdmin(onlineUser);
+            case "L":
+                getSpaces();
+                greetingsForAdmin(onlineUser);
+            case "E":
+                userInputHandler.greeting();
+            default:
+                greetingsForAdmin(onlineUser);
         }
     }
 
     private void sortedByDate() {
-        coworkingSpace.addConferenceRoom(10);
-        coworkingSpace.addIndividualWorkplace();
-        coworkingSpace.addIndividualWorkplace();
-
         ConsoleUtil.printMessage(MessageType.DATE);
         String dateInput = ConsoleUtil.getInput(scan);
         LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
@@ -99,5 +119,9 @@ public class UserOutputHandler {
                 ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
                 break;
         }
+    }
+
+    private void getSpaces() {
+        coworkingSpace.printSpaces();
     }
 }
