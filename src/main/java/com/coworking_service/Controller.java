@@ -2,6 +2,7 @@ package com.coworking_service;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.in.UserInputHandler;
+import com.coworking_service.model.BookingDirectory;
 import com.coworking_service.model.CoworkingSpace;
 import com.coworking_service.model.User;
 import com.coworking_service.model.UserDirectory;
@@ -24,6 +25,21 @@ public class Controller {
     );
 
     private final CoworkingSpace coworkingSpace = new CoworkingSpace();
+    private final BookingDirectory bookingDirectory = new BookingDirectory();
+
+    private final UserInputHandler userInputHandler =
+            new UserInputHandler(
+                    userDirectoryService,
+                    coworkingSpace,
+                    bookingDirectory);
+    private final UserOutputHandler userOutputHandler =
+            new UserOutputHandler(
+                    userDirectoryService,
+                    coworkingSpace,
+                    bookingDirectory,
+                    System.in,
+                    System.out
+            );
 
     private final UserInputHandler userInputHandler = new UserInputHandler(userDirectoryService, coworkingSpace);
     private final UserOutputHandler userOutputHandler = new UserOutputHandler(userDirectoryService, coworkingSpace);

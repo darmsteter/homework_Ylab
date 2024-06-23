@@ -57,4 +57,16 @@ public class BookingDirectory {
     public List<Booking> getBookings() {
         return bookings;
     }
+
+    /**
+     * Возвращает список всех бронирований, принадлежащих указанному пользователю.
+     *
+     * @param userLogin логин пользователя
+     * @return список бронирований, принадлежащих указанному пользователю
+     */
+    public List<Booking> getBookingsByUser(String userLogin) {
+        return bookings.stream()
+                .filter(booking -> booking.userLogin().equals(userLogin))
+                .collect(Collectors.toList());
+    }
 }

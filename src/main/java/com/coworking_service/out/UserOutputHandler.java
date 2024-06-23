@@ -7,17 +7,21 @@ import com.coworking_service.model.enums.Role;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Scanner;
 
 /**
  * Класс для обработки вывода данных пользователю в консольном приложении.
  */
 public class UserOutputHandler {
-    private final Scanner scan = new Scanner(System.in);
+    private final Scanner scan;
     private final UserInputHandler userInputHandler;
     private final CoworkingSpace coworkingSpace;
+    private final BookingDirectory bookingDirectory;
 
     /**
      * Конструктор для создания объекта UserOutputHandler.
@@ -25,9 +29,20 @@ public class UserOutputHandler {
      * @param userDirectoryService сервис для работы с пользователями
      * @param coworkingSpace       объект коворкинг-пространства
      */
-    public UserOutputHandler(UserDirectoryService userDirectoryService, CoworkingSpace coworkingSpace) {
-        this.userInputHandler = new UserInputHandler(userDirectoryService, coworkingSpace);
+    public UserOutputHandler(
+            UserDirectoryService userDirectoryService,
+            CoworkingSpace coworkingSpace,
+            BookingDirectory bookingDirectory,
+            InputStream inputStream,
+            OutputStream outputStream
+    ) {
+        this.scan = new Scanner(inputStream);
+        this.userInputHandler = new UserInputHandler(
+                userDirectoryService,
+                coworkingSpace,
+                bookingDirectory);
         this.coworkingSpace = coworkingSpace;
+        this.bookingDirectory = bookingDirectory;
     }
 
     /**
@@ -63,6 +78,9 @@ public class UserOutputHandler {
                     break;
                 case "B":
                     userInputHandler.createNewBooking(onlineUser);
+                    break;
+                case "M":
+                    getBookingByUserLogin(onlineUser.login());
                     break;
                 case "E":
                     userInputHandler.greeting();
@@ -102,6 +120,9 @@ public class UserOutputHandler {
                 case "B":
                     userInputHandler.createNewBooking(onlineUser);
                     break;
+                case "M":
+                    getLoginForSearch();
+                    break;
                 case "E":
                     userInputHandler.greeting();
                     continueActions = false;
@@ -130,5 +151,39 @@ public class UserOutputHandler {
      */
     private void getSpaces() {
         coworkingSpace.printSpaces();
+    }
+
+    /**
+     * Выводит список всех броней, принадлежащих этому пользователю.
+     *
+     * @param login логин пользователя
+     */
+    private void getBookingByUserLogin(String login) {
+        List<Booking> bookings = bookingDirectory.getBookingsByUser(login);
+        if (bookings.isEmpty()) {
+            System.out.println("У данного пользователя нет бронирований.");
+        } else {
+            System.out.println("Бронирования пользователя " + login + ":");
+            for (Booking booking : bookings) {
+                System.out.println(
+                        "Дата: "
+                                + booking.bookingDate()
+                                + ", Рабочее место: " + booking.workplaceType()
+                                + " #" + booking.workplaceID()
+                                + ".\nВремя: "
+                                + String.join(", ",
+                                booking.slots())
+                );
+            }
+        }
+    }
+
+    /**
+     * Запрашивает логин пользователя для вывода списка всех броней, принадлежащих этому пользователю.
+     */
+    private void getLoginForSearch() {
+        System.out.println("Введите логин пользователя, чьи брони вы хотите посмотреть:");
+        String login = ConsoleUtil.getInput(scan);
+        getBookingByUserLogin(login);
     }
 }

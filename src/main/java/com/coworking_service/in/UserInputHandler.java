@@ -17,18 +17,23 @@ import java.util.Scanner;
  * Класс для обработки вводимых пользователем данных.
  */
 public class UserInputHandler {
+    private final Scanner scan = new Scanner(System.in);
     private final UserDirectoryService userDirectoryService;
     private final CoworkingSpace coworkingSpace;
-    private final Scanner scan = new Scanner(System.in);
+    private final BookingDirectory bookingDirectory;
 
     /**
      * Конструктор класса UserInputHandler.
      *
      * @param userDirectoryService сервис для работы с пользователями
      */
-    public UserInputHandler(UserDirectoryService userDirectoryService, CoworkingSpace coworkingSpace) {
+    public UserInputHandler(
+            UserDirectoryService userDirectoryService,
+            CoworkingSpace coworkingSpace,
+            BookingDirectory bookingDirectory) {
         this.userDirectoryService = userDirectoryService;
         this.coworkingSpace = coworkingSpace;
+        this.bookingDirectory = bookingDirectory;
     }
 
     /**
@@ -186,7 +191,7 @@ public class UserInputHandler {
         String dateInput = ConsoleUtil.getInput(scan);
         LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
         System.out.println(
-                "Вы хотите забронировать Индивидуальное рабочее место (i) или конференц зал(c)?"
+                "Вы хотите забронировать Индивидуальное рабочее место (I) или конференц зал(C)?"
         );
         String answer = ConsoleUtil.getInput(scan);
         System.out.println("Введите номер нужного вам рабочего пространства:");
@@ -220,10 +225,13 @@ public class UserInputHandler {
     private void bookingWorkplace(int workplaceID, Workplace workplace, LocalDate date, User onlineUser) {
         Map<String, Slot> map = null;
 
+        String workplaceType = "";
         if (workplace instanceof IndividualWorkplace) {
             map = coworkingSpace.getIndividualWorkplaces().get(workplace);
+            workplaceType = "Индивидуальное рабочее место";
         } else if (workplace instanceof ConferenceRoom) {
             map = coworkingSpace.getConferenceRooms().get(workplace);
+            workplaceType = "Конференц-зал";
         }
 
         if (map == null) {
@@ -236,14 +244,20 @@ public class UserInputHandler {
         int numberOfSlots = scan.nextInt();
         scan.nextLine();
 
-        String[] reservedSlots = coworkingSpace.reserveSlots(workplace, map, workplaceID, date, slotNumber, numberOfSlots);
+        String[] reservedSlots = coworkingSpace.reserveSlots(
+                workplace, map, workplaceID, date, slotNumber, numberOfSlots
+        );
 
         if (reservedSlots != null) {
             System.out.println("Забронированные слоты:");
             for (String slotDescription : reservedSlots) {
                 System.out.println(slotDescription);
             }
-            new Booking(onlineUser.login(), workplaceID, date, reservedSlots);
+            bookingDirectory.addBooking(
+                    new Booking(
+                            onlineUser.login(), workplaceID, workplaceType, date, reservedSlots
+                    )
+            );
         } else {
             System.out.println("Не удалось зарезервировать слоты.");
         }
