@@ -50,15 +50,28 @@ public class Controller {
         coworkingSpace.addIndividualWorkplace();
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
-        String onlineUserLogin = userInputHandler.greeting();
+        User onlineUser = null;
 
-        User onlineUser;
-        try {
-            onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
-            userOutputHandler.greetingsForOnlineUser(onlineUser);
+        while (true) {
+            if (onlineUser == null) {
+                String onlineUserLogin = userInputHandler.greeting();
 
-        } catch (NoSuchUserExistsException e) {
-            ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
+                if (onlineUserLogin.isEmpty()) {
+                    break;
+                }
+
+                try {
+                    onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
+                    userOutputHandler.greetingsForOnlineUser(onlineUser);
+
+                } catch (NoSuchUserExistsException e) {
+                    ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
+                }
+            } else {
+                userOutputHandler.greetingsForOnlineUser(onlineUser);
+
+                onlineUser = null;
+            }
         }
     }
 }
