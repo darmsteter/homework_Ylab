@@ -282,18 +282,29 @@ public class UserInputHandler {
     /**
      * Удаляет бронирование пользователя по логину, дате и начальному слоту.
      */
-    public void deleteBooking() {
-        System.out.println("Введите логин пользователя, чью бронь вы хотите удалить:");
-        String userLogin = ConsoleUtil.getInput(scan);
+    public void deleteBooking(User onlineUser) {
+        String userLogin;
+        if (onlineUser.role().equals(Role.ADMINISTRATOR)) {
+            System.out.println("Введите логин пользователя, чью бронь вы хотите удалить:");
+            userLogin = ConsoleUtil.getInput(scan);
 
-        if (!userDirectoryService.checkIsUserExist(userLogin)) {
-            System.out.println("Пользователь с таким логином не существует.");
-            return;
+            if (!userDirectoryService.checkIsUserExist(userLogin)) {
+                System.out.println("Пользователь с таким логином не существует.");
+                return;
+            }
+        } else {
+            userLogin = onlineUser.login();
         }
 
         System.out.println("Введите дату бронирования (формат ГГГГ-ММ-ДД):");
         String dateInput = ConsoleUtil.getInput(scan);
-        LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalDate date;
+        try {
+            date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (DateTimeParseException e) {
+            System.out.println("Некорректный формат даты. Процесс создания брони прерван.");
+            return;
+        }
 
         Booking booking = bookingDirectory.getBooking(userLogin, date);
         if (booking == null) {

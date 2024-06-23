@@ -70,7 +70,6 @@ public class BookingDirectory {
     public Booking getBooking(String userLogin, LocalDate date) {
         System.out.println("Проверка бронирований для логина: " + userLogin + ", даты: " + date);
         for (Booking booking : bookings) {
-            System.out.println("Проверка брони: " + booking);
             if (booking.userLogin().equals(userLogin)
                     && booking.bookingDate().equals(date)) {
                 return booking;

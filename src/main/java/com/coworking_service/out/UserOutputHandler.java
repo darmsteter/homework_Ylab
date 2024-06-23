@@ -88,7 +88,7 @@ public class UserOutputHandler {
                     continueActions = false;
                     break;
                 case "R":
-                    userInputHandler.deleteBooking();
+                    userInputHandler.deleteBooking(onlineUser);
                     break;
                 default:
                     ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
@@ -128,7 +128,7 @@ public class UserOutputHandler {
                     getLoginForSearch();
                     break;
                 case "R":
-                    userInputHandler.deleteBooking();
+                    userInputHandler.deleteBooking(onlineUser);
                     break;
                 case "E":
                     userInputHandler.greeting();
