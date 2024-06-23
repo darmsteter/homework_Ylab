@@ -42,23 +42,38 @@ public class CoworkingSpace {
      */
     public void getIndividualWorkplacesSlotsByDate(LocalDate date) {
         StringBuilder result = new StringBuilder();
+
         for (Map.Entry<IndividualWorkplace, Map<String, Slot>> entry : individualWorkplaces.entrySet()) {
             result.append("Рабочее место #").append(entry.getKey().getWorkplaceID()).append(" ");
             Map<String, Slot> slots = entry.getValue();
-            if (slots.containsKey(date)) {
-                result.append("занято. Доступные слоты:\n");
-                Slot slot = slots.get(date);
-                for (Pair<String, Boolean> pair : slot.getSlots()) {
-                    if (pair.value()) {
-                        result.append(pair.key()).append("\n");
-                    }
-                }
+
+            if (slots.containsKey(date.toString())) {
+                result.append(".Доступные слоты:\n");
+                Slot slot = slots.get(date.toString());
+                appendAvailableSlots(result, slot);
             } else {
-                result.append("свободно весь день с 8 до 20.\n");
-                slots.put(date.toString(), new Slot(date));
+                result.append("свободно весь день с 8 до 20. Слоты:\n");
+                Slot newSlot = new Slot(date);
+                slots.put(date.toString(), newSlot);
+                appendAvailableSlots(result, newSlot);
             }
         }
+
         System.out.println(result);
+    }
+
+    /**
+     * Добавляет доступные слоты в StringBuilder.
+     *
+     * @param result StringBuilder, в который добавляются слоты
+     * @param slot   объект Slot, содержащий слоты времени
+     */
+    private void appendAvailableSlots(StringBuilder result, Slot slot) {
+        for (Pair<String, Boolean> pair : slot.getSlots()) {
+            if (pair.value()) {
+                result.append(pair.key()).append("\n");
+            }
+        }
     }
 
     /**
@@ -68,20 +83,20 @@ public class CoworkingSpace {
      */
     public void getConferenceRoomsSlotsByDate(LocalDate date) {
         StringBuilder result = new StringBuilder();
+
         for (Map.Entry<ConferenceRoom, Map<String, Slot>> entry : conferenceRooms.entrySet()) {
             result.append("Конференц-зал #").append(entry.getKey().getWorkplaceID()).append(" ");
             Map<String, Slot> slots = entry.getValue();
-            if (slots.containsKey(date)) {
-                result.append("занят. Доступные слоты:\n");
-                Slot slot = slots.get(date);
-                for (Pair<String, Boolean> pair : slot.getSlots()) {
-                    if (pair.value()) {
-                        result.append(pair.key()).append("\n");
-                    }
-                }
+
+            if (slots.containsKey(date.toString())) {
+                result.append(". Доступные слоты:\n");
+                Slot slot = slots.get(date.toString());
+                appendAvailableSlots(result, slot);
             } else {
-                result.append("свободен весь день с 8 до 20.\n");
-                slots.put(date.toString(), new Slot(date));
+                result.append("свободен весь день с 8 до 20. Слоты:\n");
+                Slot newSlot = new Slot(date);
+                slots.put(date.toString(), newSlot);
+                appendAvailableSlots(result, newSlot);
             }
         }
         System.out.println(result);

@@ -253,7 +253,9 @@ public class UserInputHandler {
             createNewBooking(onlineUser);
         }
 
-        System.out.println("Введите номер слота, который вы хотите забронировать и количество слотов ");
+        System.out.println("Введите номер слота, который вы хотите забронировать и количество слотов.\n" +
+                "Например, для брони с 9:00 до 13:00 необходимо ввести \n2 \n4" +
+                "\n2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.");
         int slotNumber = scan.nextInt();
         int numberOfSlots = scan.nextInt();
         scan.nextLine();
