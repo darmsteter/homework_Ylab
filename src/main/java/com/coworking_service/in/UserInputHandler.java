@@ -10,6 +10,7 @@ import com.coworking_service.util.ConsoleUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -189,7 +190,20 @@ public class UserInputHandler {
     public void createNewBooking(User onlineUser) {
         System.out.println("На какую дату вы хотите создать бронь? Формат ГГГГ-ММ-ДД");
         String dateInput = ConsoleUtil.getInput(scan);
-        LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
+
+        LocalDate date;
+        try {
+            date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
+
+            if (date.isBefore(LocalDate.now())) {
+                System.out.println("Вы не можете забронировать рабочее пространство на прошедшую дату.");
+                return;
+            }
+        } catch (DateTimeParseException e) {
+            System.out.println("Некорректный формат даты. Процесс создания брони прерван.");
+            return;
+        }
+
         System.out.println(
                 "Вы хотите забронировать Индивидуальное рабочее место (I) или конференц зал(C)?"
         );
