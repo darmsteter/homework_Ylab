@@ -201,6 +201,40 @@ public class CoworkingSpace {
             return null;
         }
     }
+
+    public void setSlotsAvailability(Workplace workplace, String[] slots, boolean availability) {
+        Map<String, Slot> slotsMap = (workplace instanceof IndividualWorkplace) ?
+                individualWorkplaces.get(workplace) :
+                conferenceRooms.get(workplace);
+
+        if (slotsMap != null) {
+            for (String slot : slots) {
+                Slot currentSlot = slotsMap.get(slot);
+                if (currentSlot != null) {
+                    int index = getSlotIndex(currentSlot, slot);
+                    currentSlot.setSlotAvailability(index, availability);
+                }
+            }
+        }
+    }
+
+    /**
+     * Возвращает индекс слота в массиве слотов.
+     *
+     * @param currentSlot текущий слот
+     * @param slotName имя слота
+     * @return индекс слота
+     */
+    private int getSlotIndex(Slot currentSlot, String slotName) {
+        Pair<String, Boolean>[] slotsArray = currentSlot.getSlots();
+        for (int i = 0; i < slotsArray.length; i++) {
+            if (slotsArray[i].key().equals(slotName)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Invalid slot name: " + slotName);
+    }
+
 }
 
 

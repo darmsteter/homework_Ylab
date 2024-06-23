@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import java.time.LocalDate;
+
 /**
  * Класс, представляющий директорию бронирований, хранящий список всех сделанных броней.
  */
@@ -56,6 +58,34 @@ public class BookingDirectory {
      */
     public List<Booking> getBookings() {
         return bookings;
+    }
+
+    /**
+     * Возвращает бронирование по логину пользователя, дате и начальному слоту.
+     *
+     * @param userLogin логин пользователя
+     * @param date      дата бронирования
+     * @return объект бронирования, если найден; иначе null
+     */
+    public Booking getBooking(String userLogin, LocalDate date) {
+        System.out.println("Проверка бронирований для логина: " + userLogin + ", даты: " + date);
+        for (Booking booking : bookings) {
+            System.out.println("Проверка брони: " + booking);
+            if (booking.userLogin().equals(userLogin)
+                    && booking.bookingDate().equals(date)) {
+                return booking;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Удаляет бронирование из реестра.
+     *
+     * @param booking объект, который необходимо удалить
+     */
+    public void removeBooking(Booking booking) {
+        bookings.remove(booking);
     }
 
     /**

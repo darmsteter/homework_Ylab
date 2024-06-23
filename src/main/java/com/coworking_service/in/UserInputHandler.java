@@ -262,4 +262,39 @@ public class UserInputHandler {
             System.out.println("Не удалось зарезервировать слоты.");
         }
     }
+
+    /**
+     * Удаляет бронирование пользователя по логину, дате и начальному слоту.
+     */
+    public void deleteBooking() {
+        System.out.println("Введите логин пользователя, чью бронь вы хотите удалить:");
+        String userLogin = ConsoleUtil.getInput(scan);
+
+        if (!userDirectoryService.checkIsUserExist(userLogin)) {
+            System.out.println("Пользователь с таким логином не существует.");
+            return;
+        }
+
+        System.out.println("Введите дату бронирования (формат ГГГГ-ММ-ДД):");
+        String dateInput = ConsoleUtil.getInput(scan);
+        LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
+
+        Booking booking = bookingDirectory.getBooking(userLogin, date);
+        if (booking == null) {
+            System.out.println("Бронирование не найдено.");
+            return;
+        }
+
+        Workplace workplace = (booking.workplaceType().equals("Индивидуальное рабочее место")) ?
+                coworkingSpace.findIndividualWorkplaceById(booking.workplaceID()) :
+                coworkingSpace.findConferenceRoomById(booking.workplaceID());
+
+        if (workplace != null) {
+            coworkingSpace.setSlotsAvailability(workplace, booking.slots(), true);
+        }
+
+        bookingDirectory.removeBooking(booking);
+
+        System.out.println("Бронирование удалено.");
+    }
 }

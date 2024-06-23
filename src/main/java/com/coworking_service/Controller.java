@@ -41,9 +41,6 @@ public class Controller {
                     System.out
             );
 
-    private final UserInputHandler userInputHandler = new UserInputHandler(userDirectoryService, coworkingSpace);
-    private final UserOutputHandler userOutputHandler = new UserOutputHandler(userDirectoryService, coworkingSpace);
-
     /**
      * Запускает консольное приложение.
      */
