@@ -51,8 +51,9 @@ public class Controller {
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
         User onlineUser = null;
+        boolean running = true;
 
-        while (true) {
+        while (running) {
             if (onlineUser == null) {
                 String onlineUserLogin = userInputHandler.greeting();
 
@@ -63,6 +64,7 @@ public class Controller {
                 try {
                     onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
                     userOutputHandler.greetingsForOnlineUser(onlineUser);
+                    onlineUser = null;
 
                 } catch (NoSuchUserExistsException e) {
                     ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);

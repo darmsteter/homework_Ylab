@@ -63,7 +63,7 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    private void greetingsForUser(User onlineUser) {
+    public void greetingsForUser(User onlineUser) {
         boolean continueActions = true;
         while (continueActions) {
             ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
@@ -84,6 +84,7 @@ public class UserOutputHandler {
                     break;
                 case "E":
                     userInputHandler.greeting();
+                    onlineUser = null;
                     continueActions = false;
                     break;
                 case "R":
@@ -101,7 +102,7 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    private void greetingsForAdmin(User onlineUser) {
+    public void greetingsForAdmin(User onlineUser) {
         boolean continueActions = true;
         while (continueActions) {
             ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
@@ -131,6 +132,7 @@ public class UserOutputHandler {
                     break;
                 case "E":
                     userInputHandler.greeting();
+                    onlineUser = null;
                     continueActions = false;
                     break;
                 default:
