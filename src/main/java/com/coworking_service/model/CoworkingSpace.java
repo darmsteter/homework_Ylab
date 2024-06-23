@@ -202,27 +202,37 @@ public class CoworkingSpace {
         }
     }
 
+    /**
+     * Устанавливает доступность указанных слотов для рабочего места или конференц-зала.
+     *
+     * @param workplace    объект рабочего места или конференц-зала
+     * @param slots        массив имен слотов, доступность которых необходимо изменить
+     * @param availability новое значение доступности для указанных слотов
+     */
     public void setSlotsAvailability(Workplace workplace, String[] slots, boolean availability) {
         Map<String, Slot> slotsMap = (workplace instanceof IndividualWorkplace) ?
                 individualWorkplaces.get(workplace) :
                 conferenceRooms.get(workplace);
 
         if (slotsMap != null) {
-            for (String slot : slots) {
-                Slot currentSlot = slotsMap.get(slot);
-                if (currentSlot != null) {
-                    int index = getSlotIndex(currentSlot, slot);
-                    currentSlot.setSlotAvailability(index, availability);
+            for (Map.Entry<String, Slot> entry : slotsMap.entrySet()) {
+                Slot currentSlot = entry.getValue();
+                for (String slotName : slots) {
+                    int index = getSlotIndex(currentSlot, slotName);
+                    if (index >= 0) {
+                        currentSlot.setSlotAvailability(index, availability);
+                    }
                 }
             }
         }
     }
 
+
     /**
      * Возвращает индекс слота в массиве слотов.
      *
      * @param currentSlot текущий слот
-     * @param slotName имя слота
+     * @param slotName    имя слота
      * @return индекс слота
      */
     private int getSlotIndex(Slot currentSlot, String slotName) {
