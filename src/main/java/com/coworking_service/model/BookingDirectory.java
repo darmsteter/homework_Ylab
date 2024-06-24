@@ -1,8 +1,6 @@
 package com.coworking_service.model;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import java.time.LocalDate;
@@ -11,13 +9,13 @@ import java.time.LocalDate;
  * Класс, представляющий директорию бронирований, хранящий список всех сделанных броней.
  */
 public class BookingDirectory {
-    private final List<Booking> bookings;
+    private final Map<LocalDate, Map<String, Booking>> bookings;
 
     /**
      * Конструктор для инициализации нового экземпляра реестра бронирований.
      */
     public BookingDirectory() {
-        this.bookings = new ArrayList<>();
+        this.bookings = new HashMap<>();
     }
 
     /**
@@ -26,7 +24,9 @@ public class BookingDirectory {
      * @param booking объект, который необходимо добавить
      */
     public void addBooking(Booking booking) {
-        bookings.add(booking);
+        bookings
+                .computeIfAbsent(booking.bookingDate(), k -> new HashMap<>())
+                .put(booking.userLogin(), booking);
     }
 
     /**
@@ -35,7 +35,8 @@ public class BookingDirectory {
      * @return список бронирований, отсортированный по дате
      */
     public List<Booking> sortByDate() {
-        return bookings.stream()
+        return bookings.values().stream()
+                .flatMap(map -> map.values().stream())
                 .sorted(Comparator.comparing(Booking::bookingDate))
                 .collect(Collectors.toList());
     }
@@ -46,7 +47,8 @@ public class BookingDirectory {
      * @return список бронирований, отсортированный по логину пользователя
      */
     public List<Booking> sortByUser() {
-        return bookings.stream()
+        return bookings.values().stream()
+                .flatMap(map -> map.values().stream())
                 .sorted(Comparator.comparing(Booking::userLogin))
                 .collect(Collectors.toList());
     }
@@ -57,7 +59,9 @@ public class BookingDirectory {
      * @return список всех бронирований
      */
     public List<Booking> getBookings() {
-        return bookings;
+        return bookings.values().stream()
+                .flatMap(map -> map.values().stream())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -69,11 +73,9 @@ public class BookingDirectory {
      */
     public Booking getBooking(String userLogin, LocalDate date) {
         System.out.println("Проверка бронирований для логина: " + userLogin + ", даты: " + date);
-        for (Booking booking : bookings) {
-            if (booking.userLogin().equals(userLogin)
-                    && booking.bookingDate().equals(date)) {
-                return booking;
-            }
+        Map<String, Booking> dateBookings = bookings.get(date);
+        if (dateBookings != null) {
+            return dateBookings.get(userLogin);
         }
         return null;
     }
@@ -84,7 +86,13 @@ public class BookingDirectory {
      * @param booking объект, который необходимо удалить
      */
     public void removeBooking(Booking booking) {
-        bookings.remove(booking);
+        Map<String, Booking> dateBookings = bookings.get(booking.bookingDate());
+        if (dateBookings != null) {
+            dateBookings.remove(booking.userLogin());
+            if (dateBookings.isEmpty()) {
+                bookings.remove(booking.bookingDate());
+            }
+        }
     }
 
     /**
@@ -94,8 +102,9 @@ public class BookingDirectory {
      * @return список бронирований, принадлежащих указанному пользователю
      */
     public List<Booking> getBookingsByUser(String userLogin) {
-        return bookings.stream()
-                .filter(booking -> booking.userLogin().equals(userLogin))
+        return bookings.values().stream()
+                .map(map -> map.get(userLogin))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 }
