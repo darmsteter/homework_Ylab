@@ -19,3 +19,10 @@ gradle-app.setting
 # Ignore Gradle build output directory
 build
 .idea/
+.gradle/
+build/
+*.iml
+gradle/wrapper/gradle-wrapper.properties
+gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
