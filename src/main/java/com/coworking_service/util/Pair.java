@@ -1,4 +1,4 @@
-package com.coworking_service.model;
+package com.coworking_service.util;
 
 /**
  * Класс, представляющий пару значений ключ-значение.

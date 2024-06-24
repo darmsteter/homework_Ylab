@@ -1,5 +1,6 @@
 package com.coworking_service.model;
 
+import com.coworking_service.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

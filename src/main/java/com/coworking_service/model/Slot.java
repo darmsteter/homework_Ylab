@@ -1,5 +1,7 @@
 package com.coworking_service.model;
 
+import com.coworking_service.util.Pair;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
