@@ -2,13 +2,19 @@ plugins {
     application
 }
 
+val versions = mapOf(
+    "junitJupiter" to "5.8.1",
+    "mockitoCore" to "3.11.2",
+    "mockitoJunitJupiter" to "3.11.2"
+)
+
 dependencies {
-    testImplementation(libs.junit.jupiter)
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${versions["junitJupiter"]}")
 
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:${versions["junitJupiter"]}")
 
-    testImplementation("org.mockito:mockito-core:3.11.2")
-    testImplementation("org.mockito:mockito-junit-jupiter:3.11.2")
+    testImplementation("org.mockito:mockito-core:${versions["mockitoCore"]}")
+    testImplementation("org.mockito:mockito-junit-jupiter:${versions["mockitoJunitJupiter"]}")
 }
 
 java {
