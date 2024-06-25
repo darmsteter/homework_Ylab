@@ -1,6 +1,7 @@
-package com.coworking_service.model;
+package com.coworking_service.repository;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
+import com.coworking_service.model.User;
 
 import java.util.LinkedHashMap;
 import java.util.Optional;

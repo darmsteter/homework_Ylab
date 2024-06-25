@@ -2,6 +2,7 @@ package com.coworking_service.model;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.model.enums.Role;
+import com.coworking_service.repository.UserDirectory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

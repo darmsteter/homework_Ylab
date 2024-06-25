@@ -2,7 +2,7 @@ package com.coworking_service.service.interfaces;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.model.User;
-import com.coworking_service.model.UserDirectory;
+import com.coworking_service.repository.UserDirectory;
 
 /**
  * Интерфейс сервиса для работы с директорией пользователей.
