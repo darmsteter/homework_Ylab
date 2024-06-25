@@ -5,6 +5,7 @@ import com.coworking_service.model.*;
 import com.coworking_service.model.enums.Commands;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
+import com.coworking_service.repository.BookingDirectory;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 

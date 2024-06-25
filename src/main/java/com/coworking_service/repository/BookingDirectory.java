@@ -1,4 +1,6 @@
-package com.coworking_service.model;
+package com.coworking_service.repository;
+
+import com.coworking_service.model.Booking;
 
 import java.util.*;
 import java.util.stream.Collectors;
