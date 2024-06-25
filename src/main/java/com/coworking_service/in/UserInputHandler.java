@@ -1,18 +1,20 @@
 package com.coworking_service.in;
 
+import com.coworking_service.exception.IncorrectPasswordException;
 import com.coworking_service.exception.NoSuchUserExistsException;
+import com.coworking_service.exception.UserAlreadyExistsException;
 import com.coworking_service.model.*;
 import com.coworking_service.model.enums.Commands;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
-import com.coworking_service.repository.BookingDirectory;
+import com.coworking_service.service.interfaces.BookingService;
+import com.coworking_service.service.interfaces.CoworkingSpaceService;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -20,22 +22,25 @@ import java.util.Scanner;
  */
 public class UserInputHandler {
     private final Scanner scan = new Scanner(System.in);
+    private final BookingService bookingService;
     private final UserDirectoryService userDirectoryService;
-    private final CoworkingSpace coworkingSpace;
-    private final BookingDirectory bookingDirectory;
+    private final CoworkingSpaceService coworkingSpaceService;
 
     /**
      * Конструктор класса UserInputHandler.
      *
-     * @param userDirectoryService сервис для работы с пользователями
+     * @param bookingService        сервис управления бронированиями
+     * @param userDirectoryService  сервис управления пользовательскими данными
+     * @param coworkingSpaceService сервис управления рабочими пространствами
      */
     public UserInputHandler(
+            BookingService bookingService,
             UserDirectoryService userDirectoryService,
-            CoworkingSpace coworkingSpace,
-            BookingDirectory bookingDirectory) {
+            CoworkingSpaceService coworkingSpaceService
+    ) {
+        this.bookingService = bookingService;
         this.userDirectoryService = userDirectoryService;
-        this.coworkingSpace = coworkingSpace;
-        this.bookingDirectory = bookingDirectory;
+        this.coworkingSpaceService = coworkingSpaceService;
     }
 
     /**
@@ -79,29 +84,15 @@ public class UserInputHandler {
         if (login.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
             return "";
         }
-        if (userDirectoryService.checkIsUserExist(login)) {
-            User currentUser = userDirectoryService.findUserByLogin(login);
-
-            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-            ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
-
-            while (true) {
-                String password = ConsoleUtil.getInput(scan);
-
-                if (password.equals(currentUser.password())) {
-                    ConsoleUtil.printMessage(MessageType.WELCOME_USER);
-                    System.out.println(currentUser.login());
-                    return currentUser.login();
-                } else if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
-                    return "";
-                } else {
-                    ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-                    ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
-                }
-            }
-        } else {
-            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+        try {
+            String userLogin = userDirectoryService.logIn(login, scan);
+            ConsoleUtil.printMessage(MessageType.WELCOME_USER);
+            System.out.println(userLogin);
+            return userLogin;
+        } catch (NoSuchUserExistsException e) {
             ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
+        } catch (IncorrectPasswordException e) {
+            ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
         }
         return "";
     }
@@ -119,24 +110,116 @@ public class UserInputHandler {
             return;
         }
 
-        if (userDirectoryService.checkIsUserExist(login)) {
+        try {
+            userDirectoryService.registerUser(login, scan);
+            ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
+        } catch (UserAlreadyExistsException e) {
             ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
             ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
-        } else {
-            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-            ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
+        }
+    }
 
-            String password = ConsoleUtil.getInput(scan);
+    /**
+     * Обрабатывает действия обычного пользователя.
+     *
+     * @param onlineUser объект пользователя
+     */
+    public void handleUserActions(User onlineUser) {
+        boolean continueActions = true;
+        while (continueActions) {
+            String userResponse = ConsoleUtil.getInput(scan);
 
-            if (password.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
-                return;
+            switch (userResponse.toUpperCase()) {
+                case "D":
+                    handleSortedByDate();
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    handleUserActions(onlineUser);
+                    break;
+                case "L":
+                    coworkingSpaceService.getSpaces();
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    handleUserActions(onlineUser);
+                    break;
+                case "B":
+                    createNewBooking(onlineUser);
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    handleUserActions(onlineUser);
+                    break;
+                case "M":
+                    getBookingByUserLogin(onlineUser.login());
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    handleUserActions(onlineUser);
+                    break;
+                case "E":
+                    greeting();
+                    continueActions = false;
+                    break;
+                case "R":
+                    deleteBooking(onlineUser);
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    handleUserActions(onlineUser);
+                    break;
+                default:
+                    ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                    break;
             }
+        }
+    }
 
-            userDirectoryService.userDirectory().addNewUser(
-                    login, new User(login, password, Role.USER)
-            );
+    /**
+     * Обрабатывает действия администратора.
+     *
+     * @param onlineUser объект пользователя
+     */
+    public void handleAdminActions(User onlineUser) {
+        boolean continueActions = true;
+        while (continueActions) {
+            String userResponse = ConsoleUtil.getInput(scan);
 
-            ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
+            switch (userResponse.toUpperCase()) {
+                case "D":
+                    handleSortedByDate();
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    handleAdminActions(onlineUser);
+                    break;
+                case "I":
+                    createNewIndividualWorkplace();
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    handleAdminActions(onlineUser);
+                    break;
+                case "C":
+                    createNewConferenceRoom();
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    handleAdminActions(onlineUser);
+                    break;
+                case "L":
+                    coworkingSpaceService.getSpaces();
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    handleAdminActions(onlineUser);
+                    break;
+                case "B":
+                    createNewBooking(onlineUser);
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    handleAdminActions(onlineUser);
+                    break;
+                case "M":
+                    getLoginForSearch();
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    handleAdminActions(onlineUser);
+                    break;
+                case "R":
+                    deleteBooking(onlineUser);
+                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    handleAdminActions(onlineUser);
+                    break;
+                case "E":
+                    greeting();
+                    continueActions = false;
+                    break;
+                default:
+                    ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                    break;
+            }
         }
     }
 
@@ -148,7 +231,7 @@ public class UserInputHandler {
         String userResponse = ConsoleUtil.getInput(scan);
         switch (userResponse.toUpperCase()) {
             case "Y":
-                coworkingSpace.addIndividualWorkplace();
+                coworkingSpaceService.addIndividualWorkplace();
                 ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
                 break;
             case "N":
@@ -170,8 +253,9 @@ public class UserInputHandler {
         switch (userResponse.toUpperCase()) {
             case "Y":
                 ConsoleUtil.printMessage(MessageType.NUMBER_OF_PLACE);
-                int max = scan.nextInt();
-                coworkingSpace.addConferenceRoom(max);
+                int maxCapacity = scan.nextInt();
+                scan.nextLine();
+                coworkingSpaceService.addConferenceRoom(maxCapacity);
                 ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
                 break;
             case "N":
@@ -210,74 +294,21 @@ public class UserInputHandler {
         );
         String answer = ConsoleUtil.getInput(scan);
         System.out.println("Введите номер нужного вам рабочего пространства:");
-        int workplaceID;
-        Workplace workplace;
-        switch (answer.toUpperCase()) {
-            case "I":
-                coworkingSpace.getIndividualWorkplacesSlotsByDate(date);
-                workplaceID = scan.nextInt();
-                workplace = coworkingSpace.findIndividualWorkplaceById(workplaceID);
-                bookingWorkplace(workplaceID, workplace, date, onlineUser);
-                break;
-            case "C":
-                coworkingSpace.getConferenceRoomsSlotsByDate(date);
-                workplaceID = scan.nextInt();
-                workplace = coworkingSpace.findConferenceRoomById(workplaceID);
-                bookingWorkplace(workplaceID, workplace, date, onlineUser);
-                break;
-            default:
-        }
-    }
+        int workplaceID = scan.nextInt();
+        scan.nextLine();
 
-    /**
-     * Резервирует слоты для рабочего места или конференц-зала.
-     *
-     * @param workplaceID идентификатор рабочего места или конференц-зала
-     * @param workplace   объект рабочего места или конференц-зала
-     * @param date        дата бронирования
-     * @param onlineUser  объект пользователя
-     */
-    private void bookingWorkplace(int workplaceID, Workplace workplace, LocalDate date, User onlineUser) {
-        Map<String, Slot> map = null;
-
-        String workplaceType = "";
-        if (workplace instanceof IndividualWorkplace) {
-            map = coworkingSpace.getIndividualWorkplaces().get(workplace);
-            workplaceType = "Индивидуальное рабочее место";
-        } else if (workplace instanceof ConferenceRoom) {
-            map = coworkingSpace.getConferenceRooms().get(workplace);
-            workplaceType = "Конференц-зал";
-        }
-
-        if (map == null) {
-            System.out.println("Рабочее место не найдено.");
-            createNewBooking(onlineUser);
-        }
-
-        System.out.println("Введите номер слота, который вы хотите забронировать и количество слотов.\n" +
-                "Например, для брони с 9:00 до 13:00 необходимо ввести \n2 \n4" +
-                "\n2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.");
+        System.out.println("""
+                Введите номер слота, который вы хотите забронировать и количество слотов.
+                Например, для брони с 9:00 до 13:00 необходимо ввести\s
+                2\s
+                4\
+                
+                2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.""");
         int slotNumber = scan.nextInt();
         int numberOfSlots = scan.nextInt();
         scan.nextLine();
 
-        String[] reservedSlots = coworkingSpace.reserveSlots(
-                workplace, map, workplaceID, date, slotNumber, numberOfSlots
-        );
-
-        if (reservedSlots != null) {
-            System.out.println("Забронированные слоты:");
-            for (String slotDescription : reservedSlots) {
-                System.out.println(slotDescription);
-            }
-            bookingDirectory.addBooking(
-                    new Booking(
-                            onlineUser.login(), workplaceID, workplaceType, date, reservedSlots
-                    )
-            );
-        } else {
-            System.out.println("Не удалось зарезервировать слоты.");
-        }
+        bookingService.createNewBooking(onlineUser, date, answer, workplaceID, slotNumber, numberOfSlots);
     }
 
     /**
@@ -303,26 +334,44 @@ public class UserInputHandler {
         try {
             date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (DateTimeParseException e) {
-            System.out.println("Некорректный формат даты. Процесс создания брони прерван.");
+            System.out.println("Некорректный формат даты. Процесс удаления брони прерван.");
             return;
         }
 
-        Booking booking = bookingDirectory.getBooking(userLogin, date);
-        if (booking == null) {
-            System.out.println("Бронирование не найдено.");
-            return;
-        }
-
-        Workplace workplace = (booking.workplaceType().equals("Индивидуальное рабочее место")) ?
-                coworkingSpace.findIndividualWorkplaceById(booking.workplaceID()) :
-                coworkingSpace.findConferenceRoomById(booking.workplaceID());
-
-        if (workplace != null) {
-            coworkingSpace.setSlotsAvailability(workplace, booking.slots(), true);
-        }
-
-        bookingDirectory.removeBooking(booking);
+        bookingService.deleteBooking(userLogin, date);
 
         System.out.println("Бронирование удалено.");
+    }
+
+    /**
+     * Обрабатывает сортировку по дате.
+     */
+    private void handleSortedByDate() {
+        ConsoleUtil.printMessage(MessageType.DATE);
+        String dateInput = ConsoleUtil.getInput(scan);
+        try {
+            LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
+            coworkingSpaceService.sortedByDate(date);
+        } catch (DateTimeParseException e) {
+            System.out.println("Некорректный формат даты.");
+        }
+    }
+
+    /**
+     * Запрашивает логин пользователя для вывода списка всех броней, принадлежащих этому пользователю.
+     */
+    public void getLoginForSearch() {
+        System.out.println("Введите логин пользователя, чьи брони вы хотите посмотреть:");
+        getBookingByUserLogin(ConsoleUtil.getInput(scan));
+    }
+
+    /**
+     * Выводит список всех броней пользователя по его логину.
+     *
+     * @param login логин пользователя
+     */
+    public void getBookingByUserLogin(String login) {
+        String bookings = bookingService.getBookingsByUser(login);
+        System.out.println(bookings);
     }
 }

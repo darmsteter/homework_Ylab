@@ -1,8 +1,12 @@
 package com.coworking_service.service.interfaces;
 
+import com.coworking_service.exception.IncorrectPasswordException;
 import com.coworking_service.exception.NoSuchUserExistsException;
+import com.coworking_service.exception.UserAlreadyExistsException;
 import com.coworking_service.model.User;
 import com.coworking_service.repository.UserDirectory;
+
+import java.util.Scanner;
 
 /**
  * Интерфейс сервиса для работы с директорией пользователей.
@@ -33,4 +37,24 @@ public interface UserDirectoryService {
      * @return директория пользователей
      */
     UserDirectory userDirectory();
+
+    /**
+     * Аутентификация пользователя по логину.
+     *
+     * @param login   логин пользователя
+     * @param scanner сканнер для ввода пароля
+     * @return логин пользователя
+     * @throws NoSuchUserExistsException   если пользователь с указанным логином не найден
+     * @throws IncorrectPasswordException если пароль введен неверно
+     */
+    String logIn(String login, Scanner scanner) throws NoSuchUserExistsException, IncorrectPasswordException;
+
+    /**
+     * Регистрация нового пользователя с указанным логином.
+     *
+     * @param login   логин нового пользователя
+     * @param scanner сканнер для ввода дополнительной информации
+     * @throws UserAlreadyExistsException если пользователь с таким логином уже существует
+     */
+    void registerUser(String login, Scanner scanner) throws UserAlreadyExistsException;
 }
