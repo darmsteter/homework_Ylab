@@ -1,5 +1,6 @@
 package com.coworking_service.model;
 
+import com.coworking_service.service.SlotServiceImpl;
 import com.coworking_service.util.Pair;
 
 import java.time.LocalDate;
@@ -12,6 +13,8 @@ import java.util.Map;
 public class CoworkingSpace {
     private final HashMap<IndividualWorkplace, Map<String, Slot>> individualWorkplaces;
     private final HashMap<ConferenceRoom, Map<String, Slot>> conferenceRooms;
+
+    private final SlotServiceImpl slotService = new SlotServiceImpl();
 
     /**
      * Конструктор для создания коворкинг-пространства.
@@ -55,7 +58,7 @@ public class CoworkingSpace {
                 appendAvailableSlots(result, slot);
             } else {
                 result.append("свободно весь день с 8 до 20. Слоты:\n");
-                Slot newSlot = new Slot(date);
+                Slot newSlot = new Slot(date, slotService.generateSlots(date));
                 slots.put(date.toString(), newSlot);
                 appendAvailableSlots(result, newSlot);
             }
@@ -96,7 +99,7 @@ public class CoworkingSpace {
                 appendAvailableSlots(result, slot);
             } else {
                 result.append("свободен весь день с 8 до 20. Слоты:\n");
-                Slot newSlot = new Slot(date);
+                Slot newSlot = new Slot(date, slotService.generateSlots(date));
                 slots.put(date.toString(), newSlot);
                 appendAvailableSlots(result, newSlot);
             }
@@ -196,7 +199,7 @@ public class CoworkingSpace {
                     if (slotIndex < slot.getSlots().length) {
                         Pair<String, Boolean> pair = slot.getSlots()[slotIndex];
                         if (pair != null && pair.value()) {
-                            slot.setSlotAvailability(slotIndex, false);
+                            slotService.setSlotAvailability(slot.getSlots(), slotIndex, false);
                             reservedSlots[i] = pair.key();
                         } else {
                             System.out.println("Слот " + (slotIndex + 1) + " уже занят или не существует.");
@@ -237,7 +240,7 @@ public class CoworkingSpace {
                 for (String slotName : slots) {
                     int index = getSlotIndex(currentSlot, slotName);
                     if (index >= 0) {
-                        currentSlot.setSlotAvailability(index, availability);
+                        slotService.setSlotAvailability(currentSlot.getSlots(), index, availability);
                     }
                 }
             }
