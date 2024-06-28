@@ -11,12 +11,7 @@
     </changeSet>
 
     <changeSet id="create_user_directory" author="svetlana koreneva">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="user_directory"/>
-            </not>
-        </preConditions>
-        <createTable tableName="user_directory">
+        <createTable schemaName="Coworking" tableName="user_directory">
             <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -31,4 +26,5 @@
             </column>
         </createTable>
     </changeSet>
+
 </databaseChangeLog>

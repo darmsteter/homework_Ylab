@@ -6,7 +6,9 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <include file="00-create-schemas.xml" relativeToChangelogFile="true"/>
-    <include file="init.xml" relativeToChangelogFile="true"/>
+    <changeSet id="create-schemas" author="svetlana koreneva">
+        <sql>CREATE SCHEMA IF NOT EXISTS "ServiceTables";</sql>
+        <sql>CREATE SCHEMA IF NOT EXISTS "Coworking";</sql>
+    </changeSet>
 
 </databaseChangeLog>

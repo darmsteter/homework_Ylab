@@ -36,12 +36,23 @@ tasks.named('test', Test) {
 
 liquibase {
     activities {
-        register("main") {
+        register("createSchemas") {
             arguments = [
-                    changelogFile: 'docker/src/main/resources/db/changelog/db.changelog.xml',
+                    changeLogFile: 'docker/src/main/resources/db/changelog/00-create-schemas.xml',
                     url: 'jdbc:postgresql://localhost:5432/coworking_service',
                     username: 'user',
                     password: '12345'
+            ]
+        }
+        register("main") {
+            arguments = [
+                    changeLogFile: 'docker/src/main/resources/db/changelog/db.changelog.xml',
+                    url: 'jdbc:postgresql://localhost:5432/coworking_service',
+                    username: 'user',
+                    password: '12345',
+                    defaultSchemaName: 'ServiceTables',
+                    liquibaseSchemaName: 'ServiceTables',
+                    liquibaseCatalogName: 'ServiceTables'
             ]
         }
     }
