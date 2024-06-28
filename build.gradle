@@ -1,0 +1,48 @@
+plugins {
+    id 'application'
+    id 'org.liquibase.gradle' version '2.2.0'
+}
+
+dependencies {
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.24.0'
+    liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:2.1.1'
+    liquibaseRuntime 'info.picocli:picocli:4.7.5'
+    liquibaseRuntime 'org.yaml:snakeyaml:2.0'
+    liquibaseRuntime 'org.postgresql:postgresql:42.6.0'
+
+    testImplementation libs.junit.jupiter
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    testImplementation 'org.mockito:mockito-core:3.11.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.11.2'
+}
+
+apply plugin: 'org.liquibase.gradle'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+application {
+    mainClass = 'com.coworking_service.Main'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
+liquibase {
+    activities {
+        register("main") {
+            arguments = [
+                    changelogFile: 'docker/src/main/resources/db/changelog/db.changelog.xml',
+                    url: 'jdbc:postgresql://localhost:5432/coworking_service',
+                    username: 'user',
+                    password: '12345'
+            ]
+        }
+    }
+}
