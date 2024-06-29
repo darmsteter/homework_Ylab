@@ -1,6 +1,6 @@
 package com.coworking_service.repository.jdbc_repository;
 
-import com.coworking_service.entity.Booking;
+import com.coworking_service.entity.BookingEntity;
 import com.coworking_service.exception.PersistException;
 import com.coworking_service.util.ConnectionHolder;
 
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Репозиторий для работы с бронированиями (Booking) через JDBC.
  */
-public class BookingRepository extends JDBCRepository<Booking, Integer> {
+public class BookingRepository extends JDBCRepository<BookingEntity, Integer> {
     /**
      * Возвращает SQL-запрос для выборки бронирования по его идентификатору.
      *
@@ -82,7 +82,7 @@ public class BookingRepository extends JDBCRepository<Booking, Integer> {
      * @throws SQLException если произошла ошибка при подготовке выражения
      */
     @Override
-    protected void prepareStatementForUpdate(PreparedStatement statement, Booking obj) throws SQLException {
+    protected void prepareStatementForUpdate(PreparedStatement statement, BookingEntity obj) throws SQLException {
         statement.setInt(1, obj.userId());
         statement.setInt(2, obj.workplaceId());
         statement.setDate(3, obj.bookingDate());
@@ -99,7 +99,7 @@ public class BookingRepository extends JDBCRepository<Booking, Integer> {
      * @throws SQLException если произошла ошибка при подготовке выражения
      */
     @Override
-    protected void prepareStatementForCreate(PreparedStatement statement, Booking obj) throws SQLException {
+    protected void prepareStatementForCreate(PreparedStatement statement, BookingEntity obj) throws SQLException {
         statement.setInt(1, obj.userId());
         statement.setInt(2, obj.workplaceId());
         statement.setDate(3, obj.bookingDate());
@@ -127,10 +127,10 @@ public class BookingRepository extends JDBCRepository<Booking, Integer> {
      * @return список бронирований, соответствующих заданным параметрам
      * @throws PersistException если произошла ошибка при выполнении запроса
      */
-    public List<Booking> getBookingsByDateAndUser(Date date, Integer userId) throws PersistException {
+    public List<BookingEntity> getBookingsByDateAndUser(Date date, Integer userId) throws PersistException {
         if (date == null && userId == null)
             return null;
-        List<Booking> list;
+        List<BookingEntity> list;
         String sql = "SELECT * FROM coworking_service.\"Coworking\".booking WHERE";
         boolean is_date = false;
         if (date != null) {
@@ -170,8 +170,8 @@ public class BookingRepository extends JDBCRepository<Booking, Integer> {
      * @throws SQLException если произошла ошибка при парсинге
      */
     @Override
-    protected List<Booking> parseResultSet(ResultSet rs) throws SQLException {
-        List<Booking> bookings = new ArrayList<>();
+    protected List<BookingEntity> parseResultSet(ResultSet rs) throws SQLException {
+        List<BookingEntity> bookings = new ArrayList<>();
         while (rs.next()) {
             Integer id = rs.getInt("booking_id");
             Integer userId = rs.getInt("user_id");
@@ -179,7 +179,7 @@ public class BookingRepository extends JDBCRepository<Booking, Integer> {
             Date bookingDate = rs.getDate("booking_date");
             Time bookingTimeFrom = rs.getTime("booking_time_from");
             Time bookingTimeTo = rs.getTime("booking_time_to");
-            Booking booking = new Booking(id, userId, workplaceId, bookingDate, bookingTimeFrom, bookingTimeTo);
+            BookingEntity booking = new BookingEntity(id, userId, workplaceId, bookingDate, bookingTimeFrom, bookingTimeTo);
             bookings.add(booking);
         }
         return bookings;

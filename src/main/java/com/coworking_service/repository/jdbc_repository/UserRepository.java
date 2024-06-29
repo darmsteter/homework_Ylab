@@ -63,7 +63,7 @@ public class UserRepository extends JDBCRepository<UserEntity, Integer> {
      * @throws PersistException Если произошла ошибка при выполнении запроса к базе данных.
      */
     public List<UserEntity> getUsersByLogin(String login) throws PersistException {
-        List<UserEntity> users = new ArrayList<>();
+        List<UserEntity> users;
         String sql = "SELECT * FROM coworking_service.\"Coworking\".coworking_user WHERE login = ?;";
 
         try (PreparedStatement statement = ConnectionHolder.getInstance().getConnection().prepareStatement(sql)) {

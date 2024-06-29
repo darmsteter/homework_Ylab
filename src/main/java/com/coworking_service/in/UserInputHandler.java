@@ -1,11 +1,13 @@
 package com.coworking_service.in;
 
+import com.coworking_service.entity.BookingEntity;
 import com.coworking_service.entity.UserEntity;
 import com.coworking_service.exception.*;
 import com.coworking_service.model.*;
 import com.coworking_service.model.enums.Commands;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
+import com.coworking_service.repository.jdbc_repository.BookingRepository;
 import com.coworking_service.repository.jdbc_repository.UserRepository;
 import com.coworking_service.service.interfaces.BookingService;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
@@ -27,7 +29,8 @@ public class UserInputHandler {
     private final BookingService bookingService;
     private final UserDirectoryService userDirectoryService;
     private final CoworkingSpaceService coworkingSpaceService;
-    UserRepository userRepository = new UserRepository();
+    private final UserRepository userRepository = new UserRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
 
     /**
      * Конструктор класса UserInputHandler.
@@ -400,18 +403,41 @@ public class UserInputHandler {
     /**
      * Запрашивает логин пользователя для вывода списка всех броней, принадлежащих этому пользователю.
      */
-    public void getLoginForSearch() {
+    public void getLoginForSearch() throws PersistException {
         System.out.println("Введите логин пользователя, чьи брони вы хотите посмотреть:");
         getBookingByUserLogin(ConsoleUtil.getInput(scan));
     }
 
     /**
-     * Выводит список всех броней пользователя по его логину.
+     * Выводит список всех броней пользователя по его логину из базы данных.
      *
      * @param login логин пользователя
+     * @throws PersistException если возникает ошибка при работе с базой данных
      */
-    public void getBookingByUserLogin(String login) {
-        String bookings = bookingService.getBookingsByUser(login);
-        System.out.println(bookings);
+    public void getBookingByUserLogin(String login) throws PersistException {
+        try {
+            UserEntity user = userRepository.getUsersByLogin(login).get(0);
+
+            if (user == null) {
+                System.out.println("Пользователь с логином '" + login + "' не найден.");
+                return;
+            }
+
+            int userId = user.getPK();
+
+            List<BookingEntity> bookings = bookingRepository.getBookingsByDateAndUser(null, userId);
+
+            if (bookings.isEmpty()) {
+                System.out.println("У пользователя с логином '" + login + "' нет бронирований.");
+            } else {
+                System.out.println("Брони пользователя '" + login + "':");
+                for (BookingEntity booking : bookings) {
+                    System.out.println("Идентификатор брони: " + booking.getPK() + ", Дата брони: " + booking.getBookingDate());
+                }
+            }
+        } catch (PersistException e) {
+            System.out.println("Ошибка при получении данных из базы данных.");
+            throw e;
+        }
     }
 }
