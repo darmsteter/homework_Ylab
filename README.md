@@ -4,7 +4,7 @@
 Homework assignments completed as part of the training on the [Ylab platform](https://learning-platform.ylab.website/my-homeworks/26).
 ***
 1. [homework #1](https://github.com/darmsteter/homework_Ylab/pull/1)
-2. homework #2
+2. [homework #2](https://github.com/darmsteter/homework_Ylab/pull/2)
 3. homework #3
 4. homework #4
 5. homework #5
