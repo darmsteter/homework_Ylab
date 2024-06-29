@@ -34,12 +34,4 @@ public interface BookingService {
      * @param date      дата бронирования, которую нужно удалить
      */
     void deleteBooking(String userLogin, LocalDate date);
-
-    /**
-     * Получает строку с информацией о всех бронированиях пользователя по его логину.
-     *
-     * @param login логин пользователя, чьи бронирования нужно получить
-     * @return строка с информацией о бронированиях пользователя
-     */
-    String getBookingsByUser(String login);
 }

@@ -2,6 +2,7 @@ package com.coworking_service.service.interfaces;
 
 import com.coworking_service.util.Pair;
 
+import java.sql.Time;
 import java.time.LocalDate;
 
 /**
@@ -34,4 +35,8 @@ public interface SlotService {
      * @param available доступность слота (true если доступен, false если занят)
      */
     void setSlotAvailability(Pair<String, Boolean>[] slots, int index, boolean available);
+
+    Time calculateBookingTimeFrom(int slotNumber);
+    Time calculateBookingTimeTo(int slotNumber, int numberOfSlots);
+
 }

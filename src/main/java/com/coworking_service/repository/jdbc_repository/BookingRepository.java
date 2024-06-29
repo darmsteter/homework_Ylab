@@ -33,7 +33,7 @@ public class BookingRepository extends JDBCRepository<BookingEntity, Integer> {
      */
     @Override
     public String getUpdateQuery() {
-        return "UPDATE booking SET user_id = ?, " +
+        return "UPDATE coworking_service.\"Coworking\".booking SET user_id = ?, " +
                 "workplace_id = ?, " +
                 "booking_date = ?, " +
                 "booking_time_from = ?, " +
@@ -48,7 +48,7 @@ public class BookingRepository extends JDBCRepository<BookingEntity, Integer> {
      */
     @Override
     public String getCreateQuery() {
-        return "INSERT INTO booking (user_id, workplace_id, booking_date, booking_time_from, booking_time_to) " +
+        return "INSERT INTO coworking_service.\"Coworking\".booking (user_id, workplace_id, booking_date, booking_time_from, booking_time_to) " +
                 "VALUES (?,?,?,?,?);";
     }
 
@@ -59,7 +59,7 @@ public class BookingRepository extends JDBCRepository<BookingEntity, Integer> {
      */
     @Override
     public String getDeleteQuery() {
-        return "DELETE FROM booking WHERE booking_id = ?;";
+        return "DELETE FROM coworking_service.\"Coworking\".booking WHERE booking_id = ?;";
     }
 
     /**
@@ -161,6 +161,39 @@ public class BookingRepository extends JDBCRepository<BookingEntity, Integer> {
         }
         return list;
     }
+
+    /**
+     * Проверяет, есть ли пересечения существующих бронирований для указанного места, даты и времени.
+     *
+     * @param workplaceId   идентификатор рабочего места
+     * @param bookingDate   дата бронирования
+     * @param bookingTimeFrom время начала бронирования
+     * @param bookingTimeTo   время окончания бронирования
+     * @return true, если найдено пересечение, иначе false
+     * @throws PersistException если произошла ошибка при выполнении запроса
+     */
+    public boolean hasOverlap(int workplaceId, Date bookingDate, Time bookingTimeFrom, Time bookingTimeTo) throws PersistException {
+        String sql = "SELECT * FROM coworking_service.\"Coworking\".booking " +
+                "WHERE workplace_id = ? AND booking_date = ? " +
+                "AND ((booking_time_from < ? AND booking_time_to > ?) " +
+                "OR (booking_time_from < ? AND booking_time_to > ?) " +
+                "OR (booking_time_from >= ? AND booking_time_to <= ?));";
+        try (PreparedStatement statement = ConnectionHolder.getInstance().getConnection().prepareStatement(sql)) {
+            statement.setInt(1, workplaceId);
+            statement.setDate(2, bookingDate);
+            statement.setTime(3, bookingTimeTo);
+            statement.setTime(4, bookingTimeFrom);
+            statement.setTime(5, bookingTimeFrom);
+            statement.setTime(6, bookingTimeTo);
+            statement.setTime(7, bookingTimeFrom);
+            statement.setTime(8, bookingTimeTo);
+            ResultSet rs = statement.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new PersistException(e);
+        }
+    }
+
 
     /**
      * Парсит результат выполнения SQL-запроса в список бронирований.

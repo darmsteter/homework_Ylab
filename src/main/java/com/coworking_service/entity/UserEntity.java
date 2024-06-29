@@ -23,4 +23,8 @@ public record UserEntity(Integer id,
     public Integer getPK() {
         return id;
     }
+
+    public String getLogin() {
+        return login;
+    }
 }

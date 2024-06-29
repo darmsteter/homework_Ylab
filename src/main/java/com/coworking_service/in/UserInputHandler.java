@@ -9,12 +9,16 @@ import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
 import com.coworking_service.repository.jdbc_repository.BookingRepository;
 import com.coworking_service.repository.jdbc_repository.UserRepository;
+import com.coworking_service.service.SlotServiceImpl;
 import com.coworking_service.service.interfaces.BookingService;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
+import com.coworking_service.service.interfaces.SlotService;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 
+import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -31,6 +35,7 @@ public class UserInputHandler {
     private final CoworkingSpaceService coworkingSpaceService;
     private final UserRepository userRepository = new UserRepository();
     private final BookingRepository bookingRepository = new BookingRepository();
+    private final SlotService slotService = new SlotServiceImpl();
 
     /**
      * Конструктор класса UserInputHandler.
@@ -174,7 +179,7 @@ public class UserInputHandler {
                     handleUserActions(onlineUser);
                     break;
                 case "B":
-                    //createNewBooking(onlineUser);
+                    createNewBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
                     handleUserActions(onlineUser);
                     break;
@@ -231,7 +236,7 @@ public class UserInputHandler {
                     handleAdminActions(onlineUser);
                     break;
                 case "B":
-                    //createNewBooking(onlineUser);
+                    createNewBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
                     handleAdminActions(onlineUser);
                     break;
@@ -315,7 +320,7 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void createNewBooking(User onlineUser) {
+    public void createNewBooking(UserEntity onlineUser) {
         System.out.println("На какую дату вы хотите создать бронь? Формат ГГГГ-ММ-ДД");
         String dateInput = ConsoleUtil.getInput(scan);
 
@@ -332,27 +337,44 @@ public class UserInputHandler {
             return;
         }
 
-        System.out.println(
-                "Вы хотите забронировать Индивидуальное рабочее место (I) или конференц зал(C)?"
-        );
-        String answer = ConsoleUtil.getInput(scan);
         System.out.println("Введите номер нужного вам рабочего пространства:");
         int workplaceID = scan.nextInt();
         scan.nextLine();
 
         System.out.println("""
-                Введите номер слота, который вы хотите забронировать и количество слотов.
-                Например, для брони с 9:00 до 13:00 необходимо ввести\s
-                2\s
-                4\
-                
-                2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.""");
+        Введите номер слота, который вы хотите забронировать и количество слотов.
+        Например, для брони с 9:00 до 13:00 необходимо ввести
+        2
+        4\
+        
+        2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.""");
         int slotNumber = scan.nextInt();
         int numberOfSlots = scan.nextInt();
         scan.nextLine();
 
-        bookingService.createNewBooking(onlineUser, date, answer, workplaceID, slotNumber, numberOfSlots);
+        Time bookingTimeFrom = slotService.calculateBookingTimeFrom(slotNumber);
+        Time bookingTimeTo = slotService.calculateBookingTimeTo(slotNumber, numberOfSlots);
+
+        try {
+            boolean overlap = bookingRepository.hasOverlap(workplaceID, Date.valueOf(date), bookingTimeFrom, bookingTimeTo);
+            if (overlap) {
+                System.out.println("На указанное время это рабочее место уже занято. Пожалуйста, выберите другое время или место.");
+                return;
+            }
+
+            int userId = onlineUser.getPK();
+
+            BookingEntity booking = new BookingEntity(null, userId, workplaceID, Date.valueOf(date), bookingTimeFrom, bookingTimeTo);
+            bookingRepository.create(booking);
+
+            System.out.println("Бронь успешно создана.");
+        } catch (PersistException | NoSuchUserExistsException e) {
+            System.out.println("Ошибка при создании брони: " + e.getMessage());
+        } catch (SQLException | WrongDataException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     /**
      * Удаляет бронирование пользователя по логину, дате и начальному слоту.

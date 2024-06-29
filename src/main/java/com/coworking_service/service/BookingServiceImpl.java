@@ -127,29 +127,4 @@ public class BookingServiceImpl implements BookingService {
 
         bookingDirectory.removeBooking(booking);
     }
-
-    /**
-     * Возвращает строку с информацией о бронированиях пользователя.
-     *
-     * @param login логин пользователя
-     * @return информация о бронированиях пользователя
-     */
-    public String getBookingsByUser(String login) {
-        List<Booking> bookings = bookingDirectory.getBookingsByUser(login);
-        if (bookings.isEmpty()) {
-            return "У данного пользователя нет бронирований.";
-        } else {
-            StringBuilder bookingsInfo = new StringBuilder("Бронирования пользователя " + login + ":\n");
-            for (Booking booking : bookings) {
-                bookingsInfo.append("Дата: ")
-                        .append(booking.bookingDate())
-                        .append(", Рабочее место: ").append(booking.workplaceType())
-                        .append(" #").append(booking.workplaceID())
-                        .append(".\nВремя: ")
-                        .append(String.join(", ", booking.slots()))
-                        .append("\n");
-            }
-            return bookingsInfo.toString();
-        }
-    }
 }

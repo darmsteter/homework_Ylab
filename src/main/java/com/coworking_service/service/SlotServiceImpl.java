@@ -3,6 +3,7 @@ package com.coworking_service.service;
 import com.coworking_service.service.interfaces.SlotService;
 import com.coworking_service.util.Pair;
 
+import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -62,5 +63,35 @@ public class SlotServiceImpl implements SlotService {
             throw new IllegalArgumentException("Invalid slot index");
         }
         slots[index] = new Pair<>(slots[index].key(), available);
+    }
+
+    /**
+     * Вычисляет время начала бронирования на основе номера слота.
+     *
+     * @param slotNumber номер первого бронируемого слота
+     * @return время начала бронирования
+     */
+    public Time calculateBookingTimeFrom(int slotNumber) {
+        LocalTime startTime = START_TIME.plusHours(slotNumber - 1);
+
+        return Time.valueOf(startTime);
+    }
+
+    /**
+     * Вычисляет время окончания бронирования на основе номера слота и количества слотов.
+     *
+     * @param slotNumber    номер первого бронируемого слота
+     * @param numberOfSlots количество бронируемых слотов
+     * @return время окончания бронирования
+     */
+    public Time calculateBookingTimeTo(int slotNumber, int numberOfSlots) {
+        LocalTime startTime = START_TIME.plusHours(slotNumber - 1);
+        LocalTime endTime = startTime.plusHours(numberOfSlots);
+
+        if (endTime.isAfter(END_TIME)) {
+            endTime = END_TIME;
+        }
+
+        return Time.valueOf(endTime);
     }
 }
