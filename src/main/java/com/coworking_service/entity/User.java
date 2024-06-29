@@ -23,4 +23,13 @@ public record User(Integer id,
     public Integer getPK() {
         return id;
     }
+
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getRole() {
+        return role;
+    }
 }

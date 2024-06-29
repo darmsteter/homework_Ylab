@@ -1,11 +1,15 @@
 package com.coworking_service.service;
 
+import com.coworking_service.entity.Booking;
 import com.coworking_service.entity.Workplace;
 import com.coworking_service.exception.PersistException;
 import com.coworking_service.exception.WrongDataException;
+import com.coworking_service.repository.BookingRepository;
 import com.coworking_service.repository.WorkplaceRepository;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
 
+import java.time.LocalDate;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -13,8 +17,9 @@ import java.util.List;
  * Реализация сервиса управления рабочими пространствами.
  * Этот класс использует объект CoworkingSpace для выполнения операций над индивидуальными рабочими местами и конференц-залами.
  */
-public record CoworkingSpaceServiceImpl() implements CoworkingSpaceService {
-    private static final WorkplaceRepository workplaceRepository = new WorkplaceRepository();
+public class CoworkingSpaceServiceImpl implements CoworkingSpaceService {
+    private final WorkplaceRepository workplaceRepository = new WorkplaceRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
 
     public void addIndividualWorkplaceToDatabase() {
         try {
@@ -60,5 +65,9 @@ public record CoworkingSpaceServiceImpl() implements CoworkingSpaceService {
         for (Workplace room : conferenceRooms) {
             System.out.println("КЗ # " + room.getPK() + ", Максимальная вместимость: " + room.getMaximumCapacity());
         }
+    }
+
+    public List<Booking> sortedByDate(LocalDate date) throws PersistException {
+        return bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), null);
     }
 }

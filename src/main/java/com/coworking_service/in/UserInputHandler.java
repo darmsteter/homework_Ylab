@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -135,7 +136,7 @@ public class UserInputHandler {
             ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
             String password = ConsoleUtil.getInput(scan);
 
-            User newUser = new User(null, login, password, Role.USER.toString());
+            User newUser = new User(null, login, password, Role.USER.name());
             userRepository.create(newUser);
 
             ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
@@ -158,7 +159,7 @@ public class UserInputHandler {
 
             switch (userResponse.toUpperCase()) {
                 case "D":
-                    //handleSortedByDate();
+                    handleSortedByDate();
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
                     handleUserActions(onlineUser);
                     break;
@@ -182,7 +183,7 @@ public class UserInputHandler {
                     continueActions = false;
                     break;
                 case "R":
-                    //deleteBooking(onlineUser);
+                    deleteBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
                     handleUserActions(onlineUser);
                     break;
@@ -205,7 +206,7 @@ public class UserInputHandler {
 
             switch (userResponse.toUpperCase()) {
                 case "D":
-                    //handleSortedByDate();
+                    handleSortedByDate();
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
                     handleAdminActions(onlineUser);
                     break;
@@ -235,7 +236,7 @@ public class UserInputHandler {
                     handleAdminActions(onlineUser);
                     break;
                 case "R":
-                    //deleteBooking(onlineUser);
+                    deleteBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
                     handleAdminActions(onlineUser);
                     break;
@@ -331,12 +332,12 @@ public class UserInputHandler {
         scan.nextLine();
 
         System.out.println("""
-        Введите номер слота, который вы хотите забронировать и количество слотов.
-        Например, для брони с 9:00 до 13:00 необходимо ввести
-        2
-        4\
-        
-        2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.""");
+                Введите номер слота, который вы хотите забронировать и количество слотов.
+                Например, для брони с 9:00 до 13:00 необходимо ввести
+                2
+                4\
+                        
+                2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.""");
         int slotNumber = scan.nextInt();
         int numberOfSlots = scan.nextInt();
         scan.nextLine();
@@ -367,19 +368,20 @@ public class UserInputHandler {
 
     /**
      * Удаляет бронирование пользователя по логину, дате и начальному слоту.
-     *//*
-    public void deleteBooking(User onlineUser) {
+     */
+    public void deleteBooking(User onlineUser) throws PersistException {
         String userLogin;
-        if (onlineUser.role().equals(Role.ADMINISTRATOR)) {
+        if (Objects.equals(onlineUser.getRole(), Role.ADMINISTRATOR.name())) {
             System.out.println("Введите логин пользователя, чью бронь вы хотите удалить:");
             userLogin = ConsoleUtil.getInput(scan);
 
-            if (!userDirectoryService.checkIsUserExist(userLogin)) {
+            List<User> users = userRepository.getUsersByLogin(userLogin);
+            if (users.isEmpty()) {
                 System.out.println("Пользователь с таким логином не существует.");
                 return;
             }
         } else {
-            userLogin = onlineUser.login();
+            userLogin = onlineUser.getLogin();
         }
 
         System.out.println("Введите дату бронирования (формат ГГГГ-ММ-ДД):");
@@ -392,24 +394,66 @@ public class UserInputHandler {
             return;
         }
 
-        bookingService.deleteBooking(userLogin, date);
+        try {
+            User user = userRepository.getUsersByLogin(userLogin).get(0);
 
-        System.out.println("Бронирование удалено.");
+            if (user == null) {
+                System.out.println("Пользователь с таким логином не найден.");
+                return;
+            }
+
+            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), user.getPK());
+
+            if (bookings == null || bookings.isEmpty()) {
+                System.out.println("У пользователя нет бронирований на указанную дату.");
+                return;
+            }
+
+            System.out.println("Список бронирований пользователя:");
+            for (int i = 0; i < bookings.size(); i++) {
+                System.out.println((i + 1) + ". " + bookings.get(i));
+            }
+
+            System.out.println("Введите номер бронирования для удаления:");
+            int choice = scan.nextInt();
+            scan.nextLine();
+
+            if (choice < 1 || choice > bookings.size()) {
+                System.out.println("Некорректный номер бронирования.");
+                return;
+            }
+
+            Booking bookingToDelete = bookings.get(choice - 1);
+            bookingRepository.delete(bookingToDelete.getPK());
+
+            System.out.println("Бронь успешно удалена.");
+
+        } catch (PersistException | NoSuchUserExistsException e) {
+            System.out.println("Ошибка при удалении бронирования: " + e.getMessage());
+        } catch (WrongDataException e) {
+            throw new RuntimeException(e);
+        }
     }
-*/
+
     /**
      * Обрабатывает сортировку по дате.
      */
-    /*private void handleSortedByDate() {
+    private void handleSortedByDate() {
         ConsoleUtil.printMessage(MessageType.DATE);
         String dateInput = ConsoleUtil.getInput(scan);
         try {
             LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
-            coworkingSpaceService.sortedByDate(date);
+            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), null);
+            for (int i = 0; i < bookings.size(); i++) {
+                System.out.println((i + 1) + ". " + bookings.get(i));
+            }
+            System.out.println();
         } catch (DateTimeParseException e) {
             System.out.println("Некорректный формат даты.");
+        } catch (PersistException e) {
+            throw new RuntimeException(e);
         }
-    }*/
+    }
 
     /**
      * Запрашивает логин пользователя для вывода списка всех броней, принадлежащих этому пользователю.
