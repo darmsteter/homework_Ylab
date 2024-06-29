@@ -38,7 +38,7 @@ liquibase {
     activities {
         register("createSchemas") {
             arguments = [
-                    changeLogFile: 'docker/src/main/resources/db/changelog/00-create-schemas.xml',
+                    changeLogFile: 'docker/src/main/resources/db/changelog/00-create-schemas-and-sequence.xml',
                     url: 'jdbc:postgresql://localhost:5432/coworking_service',
                     username: 'user',
                     password: '12345'
