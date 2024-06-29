@@ -1,4 +1,4 @@
-package com.coworking_service.repository;
+package com.coworking_service.repository.collections_repository;
 
 import com.coworking_service.model.Booking;
 

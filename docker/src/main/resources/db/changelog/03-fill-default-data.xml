@@ -10,7 +10,7 @@
         <insert schemaName="Coworking" tableName="coworking_user">
             <column name="login" value="admin"/>
             <column name="password" value="admin"/>
-            <column name="role" value="admin"/>
+            <column name="role" value="Администратор"/>
         </insert>
     </changeSet>
 

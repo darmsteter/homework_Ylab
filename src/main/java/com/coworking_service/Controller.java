@@ -2,10 +2,10 @@ package com.coworking_service;
 
 import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.in.UserInputHandler;
-import com.coworking_service.repository.BookingDirectory;
+import com.coworking_service.repository.collections_repository.BookingDirectory;
 import com.coworking_service.model.CoworkingSpace;
 import com.coworking_service.model.User;
-import com.coworking_service.repository.UserDirectory;
+import com.coworking_service.repository.collections_repository.UserDirectory;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
 import com.coworking_service.out.UserOutputHandler;

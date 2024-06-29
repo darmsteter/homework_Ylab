@@ -24,4 +24,13 @@ public enum Role {
     Role(String role) {
         this.role = role;
     }
+
+    /**
+     * Получает строковое представление роли.
+     *
+     * @return строковое представление роли
+     */
+    public String getRole() {
+        return role;
+    }
 }

@@ -1,7 +1,7 @@
 package com.coworking_service.service;
 
 import com.coworking_service.model.*;
-import com.coworking_service.repository.BookingDirectory;
+import com.coworking_service.repository.collections_repository.BookingDirectory;
 import com.coworking_service.service.interfaces.BookingService;
 
 import java.time.LocalDate;

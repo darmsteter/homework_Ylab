@@ -7,7 +7,7 @@ import com.coworking_service.model.User;
 import com.coworking_service.model.enums.Commands;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
-import com.coworking_service.repository.UserDirectory;
+import com.coworking_service.repository.collections_repository.UserDirectory;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 

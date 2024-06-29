@@ -4,7 +4,7 @@ import com.coworking_service.exception.IncorrectPasswordException;
 import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.exception.UserAlreadyExistsException;
 import com.coworking_service.model.User;
-import com.coworking_service.repository.UserDirectory;
+import com.coworking_service.repository.collections_repository.UserDirectory;
 
 import java.util.Scanner;
 
