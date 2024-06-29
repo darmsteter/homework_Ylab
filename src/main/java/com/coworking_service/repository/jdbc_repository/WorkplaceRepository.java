@@ -1,6 +1,6 @@
 package com.coworking_service.repository.jdbc_repository;
 
-import com.coworking_service.entity.Workplace;
+import com.coworking_service.entity.WorkplaceEntity;
 import com.coworking_service.exception.PersistException;
 import com.coworking_service.util.ConnectionHolder;
 
@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Репозиторий для работы с рабочими местами (Workplace) через JDBC.
  */
-public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
+public class WorkplaceRepository extends JDBCRepository<WorkplaceEntity, Integer> {
     /**
      * Получает SQL-запрос SELECT для извлечения рабочего места по его первичному ключу (workplace_id).
      *
@@ -21,7 +21,7 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      */
     @Override
     public String getSelectQuery() {
-        return "SELECT * FROM workplace WHERE workplace_id = ?;";
+        return "SELECT * FROM coworking_service.\"Coworking\".workplace WHERE workplace_id = ?;";
     }
 
     /**
@@ -31,7 +31,7 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      */
     @Override
     public String getUpdateQuery() {
-        return "UPDATE workplace SET maximum_capacity = ?, workplace_type = ? WHERE workplace_id = ?;";
+        return "UPDATE coworking_service.\"Coworking\".workplace SET maximum_capacity = ?, workplace_type = ? WHERE workplace_id = ?;";
     }
 
     /**
@@ -41,7 +41,7 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      */
     @Override
     public String getCreateQuery() {
-        return "INSERT INTO workplace (maximum_capacity, workplace_type) VALUES (?,?);";
+        return "INSERT INTO coworking_service.\"Coworking\".workplace (maximum_capacity, workplace_type) VALUES (?,?);";
     }
 
     /**
@@ -51,7 +51,7 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      */
     @Override
     public String getDeleteQuery() {
-        return "DELETE FROM workplace WHERE workplace_id = ?;";
+        return "DELETE FROM coworking_service.\"Coworking\".workplace WHERE workplace_id = ?;";
     }
 
     /**
@@ -74,7 +74,7 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      * @throws SQLException Если происходит SQL-исключение при подготовке запроса.
      */
     @Override
-    protected void prepareStatementForUpdate(PreparedStatement statement, Workplace obj) throws SQLException {
+    protected void prepareStatementForUpdate(PreparedStatement statement, WorkplaceEntity obj) throws SQLException {
         statement.setInt(1, obj.maximumCapacity());
         statement.setString(2, obj.workplaceType());
         statement.setInt(3, obj.getPK());
@@ -88,7 +88,7 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      * @throws SQLException Если происходит SQL-исключение при подготовке запроса.
      */
     @Override
-    protected void prepareStatementForCreate(PreparedStatement statement, Workplace obj) throws SQLException {
+    protected void prepareStatementForCreate(PreparedStatement statement, WorkplaceEntity obj) throws SQLException {
         statement.setInt(1, obj.maximumCapacity());
         statement.setString(2, obj.workplaceType());
     }
@@ -112,8 +112,8 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      * @return Список объектов Workplace, удовлетворяющих условию выборки.
      * @throws PersistException Если происходит ошибка при выполнении запроса к базе данных.
      */
-    public List<Workplace> getWorkplacesByType(String type) throws PersistException {
-        List<Workplace> list;
+    public List<WorkplaceEntity> getWorkplacesByType(String type) throws PersistException {
+        List<WorkplaceEntity> list;
         String sql = "SELECT * FROM workplace WHERE workplace_type = ?;";
         try (PreparedStatement statement = ConnectionHolder.getInstance().getConnection().prepareStatement(sql)) {
             statement.setString(1, type);
@@ -136,13 +136,13 @@ public class WorkplaceRepository extends JDBCRepository<Workplace, Integer> {
      * @throws SQLException Если происходит SQL-исключение при обработке ResultSet.
      */
     @Override
-    protected List<Workplace> parseResultSet(ResultSet rs) throws SQLException {
-        List<Workplace> workplaces = new ArrayList<>();
+    protected List<WorkplaceEntity> parseResultSet(ResultSet rs) throws SQLException {
+        List<WorkplaceEntity> workplaces = new ArrayList<>();
         while (rs.next()) {
             Integer id = rs.getInt("workplace_id");
             Integer maximumCapacity = rs.getInt("maximum_capacity");
             String workplaceType = rs.getString("workplace_type");
-            Workplace workplace = new Workplace(id, maximumCapacity, workplaceType);
+            WorkplaceEntity workplace = new WorkplaceEntity(id, maximumCapacity, workplaceType);
             workplaces.add(workplace);
         }
         return workplaces;

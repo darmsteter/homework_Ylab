@@ -1,5 +1,7 @@
 package com.coworking_service.service.interfaces;
 
+import com.coworking_service.exception.PersistException;
+
 import java.time.LocalDate;
 
 /**
@@ -9,14 +11,14 @@ public interface CoworkingSpaceService {
     /**
      * Добавляет новое индивидуальное рабочее место в коворкинге.
      */
-    void addIndividualWorkplace();
+    void addIndividualWorkplaceToDatabase() throws PersistException;
 
     /**
      * Добавляет новый конференц-зал с указанной вместимостью в коворкинге.
      *
      * @param maxCapacity максимальная вместимость конференц-зала
      */
-    void addConferenceRoom(int maxCapacity);
+    void addConferenceRoomToDatabase(int maxCapacity) throws PersistException;
 
     /**
      * Выводит список рабочих пространств, отсортированных по указанной дате.

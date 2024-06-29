@@ -254,15 +254,20 @@ public class UserInputHandler {
     }
 
     /**
-     * Создает новое индивидуальное рабочее место.
+     * Создает новое индивидуальное рабочее место и добавляет его в базу данных.
      */
     public void createNewIndividualWorkplace() {
         ConsoleUtil.printMessage(MessageType.CREATING_INDIVIDUAL_WORKPLACE);
         String userResponse = ConsoleUtil.getInput(scan);
+
         switch (userResponse.toUpperCase()) {
             case "Y":
-                coworkingSpaceService.addIndividualWorkplace();
-                ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
+                try {
+                    coworkingSpaceService.addIndividualWorkplaceToDatabase();
+                    ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
+                } catch (PersistException e) {
+                    ConsoleUtil.printMessage(MessageType.INTERNAL_ERROR);
+                }
                 break;
             case "N":
                 ConsoleUtil.printMessage(MessageType.CANCEL_CREATING_WORKPLACE);
@@ -273,8 +278,9 @@ public class UserInputHandler {
         }
     }
 
+
     /**
-     * Создает новый конференц-зал.
+     * Создает новый конференц-зал и добавляет его в базу данных.
      */
     public void createNewConferenceRoom() {
         ConsoleUtil.printMessage(MessageType.CREATING_CONFERENCE_ROOM);
@@ -282,11 +288,15 @@ public class UserInputHandler {
 
         switch (userResponse.toUpperCase()) {
             case "Y":
-                ConsoleUtil.printMessage(MessageType.NUMBER_OF_PLACE);
-                int maxCapacity = scan.nextInt();
-                scan.nextLine();
-                coworkingSpaceService.addConferenceRoom(maxCapacity);
-                ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
+                try {
+                    ConsoleUtil.printMessage(MessageType.NUMBER_OF_PLACE);
+                    int maxCapacity = scan.nextInt();
+                    scan.nextLine();
+                    coworkingSpaceService.addConferenceRoomToDatabase(maxCapacity);
+                    ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
+                } catch (PersistException e) {
+                    ConsoleUtil.printMessage(MessageType.INTERNAL_ERROR);
+                }
                 break;
             case "N":
                 ConsoleUtil.printMessage(MessageType.CANCEL_CREATING_WORKPLACE);
