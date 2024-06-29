@@ -1,19 +1,16 @@
 package com.coworking_service.in;
 
-import com.coworking_service.entity.BookingEntity;
-import com.coworking_service.entity.UserEntity;
+import com.coworking_service.entity.Booking;
+import com.coworking_service.entity.User;
 import com.coworking_service.exception.*;
-import com.coworking_service.model.*;
-import com.coworking_service.model.enums.Commands;
-import com.coworking_service.model.enums.MessageType;
-import com.coworking_service.model.enums.Role;
-import com.coworking_service.repository.jdbc_repository.BookingRepository;
-import com.coworking_service.repository.jdbc_repository.UserRepository;
+import com.coworking_service.entity.enums.Commands;
+import com.coworking_service.entity.enums.MessageType;
+import com.coworking_service.entity.enums.Role;
+import com.coworking_service.repository.BookingRepository;
+import com.coworking_service.repository.UserRepository;
 import com.coworking_service.service.SlotServiceImpl;
-import com.coworking_service.service.interfaces.BookingService;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
 import com.coworking_service.service.interfaces.SlotService;
-import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 
 import java.sql.Date;
@@ -30,8 +27,6 @@ import java.util.Scanner;
  */
 public class UserInputHandler {
     private final Scanner scan = new Scanner(System.in);
-    private final BookingService bookingService;
-    private final UserDirectoryService userDirectoryService;
     private final CoworkingSpaceService coworkingSpaceService;
     private final UserRepository userRepository = new UserRepository();
     private final BookingRepository bookingRepository = new BookingRepository();
@@ -40,17 +35,11 @@ public class UserInputHandler {
     /**
      * Конструктор класса UserInputHandler.
      *
-     * @param bookingService        сервис управления бронированиями
-     * @param userDirectoryService  сервис управления пользовательскими данными
      * @param coworkingSpaceService сервис управления рабочими пространствами
      */
     public UserInputHandler(
-            BookingService bookingService,
-            UserDirectoryService userDirectoryService,
             CoworkingSpaceService coworkingSpaceService
     ) {
-        this.bookingService = bookingService;
-        this.userDirectoryService = userDirectoryService;
         this.coworkingSpaceService = coworkingSpaceService;
     }
 
@@ -97,7 +86,7 @@ public class UserInputHandler {
         }
 
         try {
-            List<UserEntity> users = userRepository.getUsersByLogin(login);
+            List<User> users = userRepository.getUsersByLogin(login);
             if (users.isEmpty()) {
                 throw new NoSuchUserExistsException("Пользователь '" + login + "' не найден.");
             }
@@ -105,7 +94,7 @@ public class UserInputHandler {
             ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
             String password = ConsoleUtil.getInput(scan);
 
-            UserEntity user = users.get(0);
+            User user = users.get(0);
 
             if (password.equals(user.password())) {
                 ConsoleUtil.printMessage(MessageType.WELCOME_USER);
@@ -136,7 +125,7 @@ public class UserInputHandler {
         }
 
         try {
-            List<UserEntity> existingUsers = userRepository.getUsersByLogin(login);
+            List<User> existingUsers = userRepository.getUsersByLogin(login);
             if (existingUsers != null && !existingUsers.isEmpty()) {
                 ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
                 ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
@@ -146,7 +135,7 @@ public class UserInputHandler {
             ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
             String password = ConsoleUtil.getInput(scan);
 
-            UserEntity newUser = new UserEntity(null, login, password, Role.USER.toString());
+            User newUser = new User(null, login, password, Role.USER.toString());
             userRepository.create(newUser);
 
             ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
@@ -162,14 +151,14 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleUserActions(UserEntity onlineUser) throws PersistException {
+    public void handleUserActions(User onlineUser) throws PersistException {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
 
             switch (userResponse.toUpperCase()) {
                 case "D":
-                    handleSortedByDate();
+                    //handleSortedByDate();
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
                     handleUserActions(onlineUser);
                     break;
@@ -209,14 +198,14 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleAdminActions(UserEntity onlineUser) throws PersistException {
+    public void handleAdminActions(User onlineUser) throws PersistException {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
 
             switch (userResponse.toUpperCase()) {
                 case "D":
-                    handleSortedByDate();
+                    //handleSortedByDate();
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
                     handleAdminActions(onlineUser);
                     break;
@@ -320,7 +309,7 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void createNewBooking(UserEntity onlineUser) {
+    public void createNewBooking(User onlineUser) {
         System.out.println("На какую дату вы хотите создать бронь? Формат ГГГГ-ММ-ДД");
         String dateInput = ConsoleUtil.getInput(scan);
 
@@ -364,7 +353,7 @@ public class UserInputHandler {
 
             int userId = onlineUser.getPK();
 
-            BookingEntity booking = new BookingEntity(null, userId, workplaceID, Date.valueOf(date), bookingTimeFrom, bookingTimeTo);
+            Booking booking = new Booking(null, userId, workplaceID, Date.valueOf(date), bookingTimeFrom, bookingTimeTo);
             bookingRepository.create(booking);
 
             System.out.println("Бронь успешно создана.");
@@ -378,7 +367,7 @@ public class UserInputHandler {
 
     /**
      * Удаляет бронирование пользователя по логину, дате и начальному слоту.
-     */
+     *//*
     public void deleteBooking(User onlineUser) {
         String userLogin;
         if (onlineUser.role().equals(Role.ADMINISTRATOR)) {
@@ -407,11 +396,11 @@ public class UserInputHandler {
 
         System.out.println("Бронирование удалено.");
     }
-
+*/
     /**
      * Обрабатывает сортировку по дате.
      */
-    private void handleSortedByDate() {
+    /*private void handleSortedByDate() {
         ConsoleUtil.printMessage(MessageType.DATE);
         String dateInput = ConsoleUtil.getInput(scan);
         try {
@@ -420,7 +409,7 @@ public class UserInputHandler {
         } catch (DateTimeParseException e) {
             System.out.println("Некорректный формат даты.");
         }
-    }
+    }*/
 
     /**
      * Запрашивает логин пользователя для вывода списка всех броней, принадлежащих этому пользователю.
@@ -438,7 +427,7 @@ public class UserInputHandler {
      */
     public void getBookingByUserLogin(String login) throws PersistException {
         try {
-            UserEntity user = userRepository.getUsersByLogin(login).get(0);
+            User user = userRepository.getUsersByLogin(login).get(0);
 
             if (user == null) {
                 System.out.println("Пользователь с логином '" + login + "' не найден.");
@@ -447,13 +436,13 @@ public class UserInputHandler {
 
             int userId = user.getPK();
 
-            List<BookingEntity> bookings = bookingRepository.getBookingsByDateAndUser(null, userId);
+            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(null, userId);
 
             if (bookings.isEmpty()) {
                 System.out.println("У пользователя с логином '" + login + "' нет бронирований.");
             } else {
                 System.out.println("Брони пользователя '" + login + "':");
-                for (BookingEntity booking : bookings) {
+                for (Booking booking : bookings) {
                     System.out.println("Идентификатор брони: " + booking.getPK() + ", Дата брони: " + booking.getBookingDate());
                 }
             }

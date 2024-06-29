@@ -1,6 +1,6 @@
-package com.coworking_service.repository.jdbc_repository;
+package com.coworking_service.repository;
 
-import com.coworking_service.entity.UserEntity;
+import com.coworking_service.entity.User;
 import com.coworking_service.exception.PersistException;
 import com.coworking_service.util.ConnectionHolder;
 
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Репозиторий для работы с пользователями (Coworking_user) через JDBC.
  */
-public class UserRepository extends JDBCRepository<UserEntity, Integer> {
+public class UserRepository extends JDBCRepository<User, Integer> {
     /**
      * Получает SQL-запрос SELECT для извлечения пользователя по его первичному ключу (id).
      *
@@ -62,8 +62,8 @@ public class UserRepository extends JDBCRepository<UserEntity, Integer> {
      * @return Список пользователей с данным логином.
      * @throws PersistException Если произошла ошибка при выполнении запроса к базе данных.
      */
-    public List<UserEntity> getUsersByLogin(String login) throws PersistException {
-        List<UserEntity> users;
+    public List<User> getUsersByLogin(String login) throws PersistException {
+        List<User> users;
         String sql = "SELECT * FROM coworking_service.\"Coworking\".coworking_user WHERE login = ?;";
 
         try (PreparedStatement statement = ConnectionHolder.getInstance().getConnection().prepareStatement(sql)) {
@@ -98,7 +98,7 @@ public class UserRepository extends JDBCRepository<UserEntity, Integer> {
      * @throws SQLException Если происходит SQL-исключение при подготовке запроса.
      */
     @Override
-    protected void prepareStatementForUpdate(PreparedStatement statement, UserEntity obj) throws SQLException {
+    protected void prepareStatementForUpdate(PreparedStatement statement, User obj) throws SQLException {
         statement.setString(1, obj.login());
         statement.setString(2, obj.password());
         statement.setString(3, obj.role());
@@ -113,7 +113,7 @@ public class UserRepository extends JDBCRepository<UserEntity, Integer> {
      * @throws SQLException Если происходит SQL-исключение при подготовке запроса.
      */
     @Override
-    protected void prepareStatementForCreate(PreparedStatement statement, UserEntity obj) throws SQLException {
+    protected void prepareStatementForCreate(PreparedStatement statement, User obj) throws SQLException {
         statement.setString(1, obj.login());
         statement.setString(2, obj.password());
         statement.setString(3, obj.role());
@@ -139,14 +139,14 @@ public class UserRepository extends JDBCRepository<UserEntity, Integer> {
      * @throws SQLException Если происходит SQL-исключение при обработке ResultSet.
      */
     @Override
-    protected List<UserEntity> parseResultSet(ResultSet rs) throws SQLException {
-        List<UserEntity> users = new ArrayList<>();
+    protected List<User> parseResultSet(ResultSet rs) throws SQLException {
+        List<User> users = new ArrayList<>();
         while (rs.next()) {
             Integer id = rs.getInt("id");
             String login = rs.getString("login");
             String password = rs.getString("password");
             String role = rs.getString("role");
-            UserEntity user = new UserEntity(id, login, password, role);
+            User user = new User(id, login, password, role);
             users.add(user);
         }
         return users;

@@ -1,9 +1,9 @@
-package com.coworking_service.repository.jdbc_repository;
+package com.coworking_service.repository;
 
 import com.coworking_service.entity.Entity;
 import com.coworking_service.exception.PersistException;
 import com.coworking_service.exception.WrongDataException;
-import com.coworking_service.repository.jdbc_repository.interfaces.Repository;
+import com.coworking_service.repository.interfaces.Repository;
 import com.coworking_service.util.ConnectionHolder;
 
 import java.io.Serializable;
@@ -87,9 +87,8 @@ public abstract class JDBCRepository<T extends Entity<PK>, PK extends Serializab
      * @param obj обновляемая сущность
      * @throws WrongDataException если данные сущности неверны
      * @throws PersistException   если произошла ошибка при проверке
-     * @throws SQLException       если произошла ошибка SQL
      */
-    protected void checkForUpdate(T obj) throws WrongDataException, PersistException, SQLException {
+    protected void checkForUpdate(T obj) throws WrongDataException, PersistException {
         if (obj.getPK() == null) {
             throw new WrongDataException("Can't find id to update");
         }
@@ -117,9 +116,8 @@ public abstract class JDBCRepository<T extends Entity<PK>, PK extends Serializab
      * @param obj создаваемая сущность
      * @throws PersistException   если произошла ошибка при проверке
      * @throws WrongDataException если данные сущности неверны
-     * @throws SQLException       если произошла ошибка SQL
      */
-    protected void checkForCreate(T obj) throws PersistException, WrongDataException, SQLException {
+    protected void checkForCreate(T obj) throws PersistException, WrongDataException {
         if (obj.getPK() != null) {
             if (getById(obj.getPK()) != null) {
                 throw new WrongDataException("Item is already created");

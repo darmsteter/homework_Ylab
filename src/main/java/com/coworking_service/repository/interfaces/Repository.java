@@ -1,4 +1,4 @@
-package com.coworking_service.repository.jdbc_repository.interfaces;
+package com.coworking_service.repository.interfaces;
 
 
 import com.coworking_service.entity.Entity;

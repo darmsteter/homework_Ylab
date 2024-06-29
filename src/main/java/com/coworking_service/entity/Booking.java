@@ -13,12 +13,12 @@ import java.sql.Time;
  * @param bookingTimeFrom время начала бронирования.
  * @param bookingTimeTo   время окончания бронирования.
  */
-public record BookingEntity(Integer bookingId,
-                            Integer userId,
-                            Integer workplaceId,
-                            Date bookingDate,
-                            Time bookingTimeFrom,
-                            Time bookingTimeTo) implements Entity<Integer> {
+public record Booking(Integer bookingId,
+                      Integer userId,
+                      Integer workplaceId,
+                      Date bookingDate,
+                      Time bookingTimeFrom,
+                      Time bookingTimeTo) implements Entity<Integer> {
 
     /**
      * Возвращает уникальный идентификатор бронирования.

@@ -7,9 +7,9 @@ package com.coworking_service.entity;
  * @param maximumCapacity максимальная вместимость рабочего места.
  * @param workplaceType   тип рабочего места.
  */
-public record WorkplaceEntity(Integer workplaceId,
-                              Integer maximumCapacity,
-                              String workplaceType)
+public record Workplace(Integer workplaceId,
+                        Integer maximumCapacity,
+                        String workplaceType)
         implements Entity<Integer> {
 
     /**

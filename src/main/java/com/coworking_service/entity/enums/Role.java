@@ -1,4 +1,4 @@
-package com.coworking_service.model.enums;
+package com.coworking_service.entity.enums;
 
 /**
  * Перечисление, представляющее роли пользователей в приложении.
@@ -23,14 +23,5 @@ public enum Role {
      */
     Role(String role) {
         this.role = role;
-    }
-
-    /**
-     * Получает строковое представление роли.
-     *
-     * @return строковое представление роли
-     */
-    public String getRole() {
-        return role;
     }
 }

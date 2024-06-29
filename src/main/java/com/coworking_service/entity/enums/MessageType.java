@@ -1,4 +1,4 @@
-package com.coworking_service.model.enums;
+package com.coworking_service.entity.enums;
 
 /**
  * Перечисление, представляющее типы сообщений, используемых в консольном приложении.

@@ -1,6 +1,6 @@
 package com.coworking_service.util;
 
-import com.coworking_service.model.enums.MessageType;
+import com.coworking_service.entity.enums.MessageType;
 
 import java.util.Scanner;
 
