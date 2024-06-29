@@ -73,5 +73,4 @@ public record CoworkingSpaceServiceImpl(CoworkingSpace coworkingSpace) implement
             System.out.println("КЗ # " + room.getPK() + ", Максимальная вместимость: " + room.getMaximumCapacity());
         }
     }
-
 }
