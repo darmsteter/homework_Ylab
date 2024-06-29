@@ -23,7 +23,7 @@ public class BookingRepository extends JDBCRepository<Booking, Integer> {
      */
     @Override
     public String getSelectQuery() {
-        return "SELECT * FROM booking WHERE booking_id = ?;";
+        return "SELECT * FROM coworking_service.\"Coworking\".booking WHERE booking_id = ?;";
     }
 
     /**
@@ -131,7 +131,7 @@ public class BookingRepository extends JDBCRepository<Booking, Integer> {
         if (date == null && userId == null)
             return null;
         List<Booking> list;
-        String sql = "SELECT * FROM booking WHERE";
+        String sql = "SELECT * FROM coworking_service.\"Coworking\".booking WHERE";
         boolean is_date = false;
         if (date != null) {
             sql += " booking_date = ?";

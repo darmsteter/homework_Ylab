@@ -1,20 +1,21 @@
 package com.coworking_service.in;
 
-import com.coworking_service.exception.IncorrectPasswordException;
-import com.coworking_service.exception.NoSuchUserExistsException;
-import com.coworking_service.exception.UserAlreadyExistsException;
+import com.coworking_service.exception.*;
 import com.coworking_service.model.*;
 import com.coworking_service.model.enums.Commands;
 import com.coworking_service.model.enums.MessageType;
 import com.coworking_service.model.enums.Role;
+import com.coworking_service.repository.jdbc_repository.UserRepository;
 import com.coworking_service.service.interfaces.BookingService;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
 import com.coworking_service.service.interfaces.UserDirectoryService;
 import com.coworking_service.util.ConsoleUtil;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -111,11 +112,26 @@ public class UserInputHandler {
         }
 
         try {
-            userDirectoryService.registerUser(login, scan);
+            UserRepository userRepository = new UserRepository();
+
+            List<com.coworking_service.entity.User> existingUsers = userRepository.getUsersByLogin(login);
+            if (existingUsers != null && !existingUsers.isEmpty()) {
+                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
+                ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
+                return;
+            }
+
+            ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
+            String password = ConsoleUtil.getInput(scan);
+
+            com.coworking_service.entity.User newUser = new com.coworking_service.entity.User(null, login, password, Role.USER.toString());
+            userRepository.create(newUser);
+
             ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
-        } catch (UserAlreadyExistsException e) {
+        } catch (PersistException | WrongDataException | SQLException e) {
             ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
             ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
+            e.printStackTrace();
         }
     }
 

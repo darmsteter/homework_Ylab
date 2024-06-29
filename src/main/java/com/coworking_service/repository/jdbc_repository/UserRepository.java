@@ -1,6 +1,8 @@
 package com.coworking_service.repository.jdbc_repository;
 
 import com.coworking_service.entity.User;
+import com.coworking_service.exception.PersistException;
+import com.coworking_service.util.ConnectionHolder;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,7 +32,7 @@ public class UserRepository extends JDBCRepository<User, Integer> {
      */
     @Override
     public String getUpdateQuery() {
-        return "UPDATE coworking_user SET login = ?, password = ?, role = ? WHERE id = ?;";
+        return "UPDATE coworking_service.\"Coworking\".coworking_user SET login = ?, password = ?, role = ? WHERE id = ?;";
     }
 
     /**
@@ -40,7 +42,7 @@ public class UserRepository extends JDBCRepository<User, Integer> {
      */
     @Override
     public String getCreateQuery() {
-        return "INSERT INTO coworking_user (login, password, role) VALUES (?,?,?);";
+        return "INSERT INTO coworking_service.\"Coworking\".coworking_user (login, password, role) VALUES (?,?,?);";
     }
 
     /**
@@ -50,8 +52,31 @@ public class UserRepository extends JDBCRepository<User, Integer> {
      */
     @Override
     public String getDeleteQuery() {
-        return "DELETE FROM coworking_user WHERE id = ?;";
+        return "DELETE FROM coworking_service.\"Coworking\".coworking_user WHERE id = ?;";
     }
+
+    /**
+     * Получает список пользователей по их логину.
+     *
+     * @param login Логин пользователя для поиска.
+     * @return Список пользователей с данным логином.
+     * @throws PersistException Если произошла ошибка при выполнении запроса к базе данных.
+     */
+    public List<User> getUsersByLogin(String login) throws PersistException {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM coworking_service.\"Coworking\".coworking_user WHERE login = ?;";
+
+        try (PreparedStatement statement = ConnectionHolder.getInstance().getConnection().prepareStatement(sql)) {
+            statement.setString(1, login);
+            ResultSet rs = statement.executeQuery();
+            users = parseResultSet(rs);
+        } catch (SQLException e) {
+            throw new PersistException(e);
+        }
+
+        return users;
+    }
+
 
     /**
      * Подготавливает PreparedStatement для выборки пользователя по первичному ключу.
@@ -91,7 +116,7 @@ public class UserRepository extends JDBCRepository<User, Integer> {
     protected void prepareStatementForCreate(PreparedStatement statement, User obj) throws SQLException {
         statement.setString(1, obj.login());
         statement.setString(2, obj.password());
-        statement.setString(3, obj.role().toString());
+        statement.setString(3, obj.role());
     }
 
     /**

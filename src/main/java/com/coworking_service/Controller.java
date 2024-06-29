@@ -45,9 +45,9 @@ public class Controller {
      * Запускает консольное приложение.
      */
     public void console() {
-        coworkingSpace.addConferenceRoom(10);
+        /*coworkingSpace.addConferenceRoom(10);
         coworkingSpace.addIndividualWorkplace();
-        coworkingSpace.addIndividualWorkplace();
+        coworkingSpace.addIndividualWorkplace();*/
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
         User onlineUser = null;
