@@ -8,10 +8,10 @@ package com.coworking_service.entity;
  * @param password пароль пользователя.
  * @param role     роль пользователя в системе.
  */
-public record User(Integer id,
-                   String login,
-                   String password,
-                   String role)
+public record UserEntity(Integer id,
+                         String login,
+                         String password,
+                         String role)
         implements Entity<Integer> {
 
     /**

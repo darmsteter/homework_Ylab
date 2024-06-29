@@ -1,5 +1,6 @@
 package com.coworking_service.out;
 
+import com.coworking_service.entity.UserEntity;
 import com.coworking_service.in.UserInputHandler;
 import com.coworking_service.model.*;
 import com.coworking_service.model.enums.MessageType;
@@ -19,13 +20,14 @@ public class UserOutputHandler {
     public UserOutputHandler(UserInputHandler userInputHandler) {
         this.userInputHandler = userInputHandler;
     }
+
     /**
-     * Приветствует пользователя в зависимости от его роли (администратор или обычный пользователь).
+     * Приветствует онлайн-пользователя и определяет его роль для предоставления вариантов действий.
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForOnlineUser(User onlineUser) {
-        if (onlineUser.role().equals(Role.ADMINISTRATOR)) {
+    public void greetingsForOnlineUser(UserEntity onlineUser) {
+        if (onlineUser.role().equals("admin")) {
             greetingsForAdmin(onlineUser);
         } else {
             greetingsForUser(onlineUser);
@@ -37,7 +39,7 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForUser(User onlineUser) {
+    public void greetingsForUser(UserEntity onlineUser) {
         ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
         userInputHandler.handleUserActions(onlineUser);
     }
@@ -47,8 +49,9 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForAdmin(User onlineUser) {
+    public void greetingsForAdmin(UserEntity onlineUser) {
         ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
         userInputHandler.handleAdminActions(onlineUser);
     }
+
 }

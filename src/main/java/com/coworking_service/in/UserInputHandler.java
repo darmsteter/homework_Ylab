@@ -1,5 +1,6 @@
 package com.coworking_service.in;
 
+import com.coworking_service.entity.UserEntity;
 import com.coworking_service.exception.*;
 import com.coworking_service.model.*;
 import com.coworking_service.model.enums.Commands;
@@ -26,6 +27,7 @@ public class UserInputHandler {
     private final BookingService bookingService;
     private final UserDirectoryService userDirectoryService;
     private final CoworkingSpaceService coworkingSpaceService;
+    UserRepository userRepository = new UserRepository();
 
     /**
      * Конструктор класса UserInputHandler.
@@ -85,18 +87,32 @@ public class UserInputHandler {
         if (login.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
             return "";
         }
+
         try {
-            String userLogin = userDirectoryService.logIn(login, scan);
-            ConsoleUtil.printMessage(MessageType.WELCOME_USER);
-            System.out.println(userLogin);
-            return userLogin;
-        } catch (NoSuchUserExistsException e) {
+            List<UserEntity> users = userRepository.getUsersByLogin(login);
+            if (users.isEmpty()) {
+                throw new NoSuchUserExistsException("Пользователь '" + login + "' не найден.");
+            }
+
+            ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
+            String password = ConsoleUtil.getInput(scan);
+
+            UserEntity user = users.get(0);
+
+            if (password.equals(user.password())) {
+                ConsoleUtil.printMessage(MessageType.WELCOME_USER);
+                System.out.println(login);
+                return login;
+            } else {
+                ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
+                return "";
+            }
+        } catch (PersistException | NoSuchUserExistsException e) {
             ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
-        } catch (IncorrectPasswordException e) {
-            ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
+            return "";
         }
-        return "";
     }
+
 
     /**
      * Регистрация нового пользователя.
@@ -112,9 +128,7 @@ public class UserInputHandler {
         }
 
         try {
-            UserRepository userRepository = new UserRepository();
-
-            List<com.coworking_service.entity.User> existingUsers = userRepository.getUsersByLogin(login);
+            List<UserEntity> existingUsers = userRepository.getUsersByLogin(login);
             if (existingUsers != null && !existingUsers.isEmpty()) {
                 ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
                 ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
@@ -124,7 +138,7 @@ public class UserInputHandler {
             ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
             String password = ConsoleUtil.getInput(scan);
 
-            com.coworking_service.entity.User newUser = new com.coworking_service.entity.User(null, login, password, Role.USER.toString());
+            UserEntity newUser = new UserEntity(null, login, password, Role.USER.toString());
             userRepository.create(newUser);
 
             ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
@@ -140,7 +154,7 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleUserActions(User onlineUser) {
+    public void handleUserActions(UserEntity onlineUser) {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
@@ -157,7 +171,7 @@ public class UserInputHandler {
                     handleUserActions(onlineUser);
                     break;
                 case "B":
-                    createNewBooking(onlineUser);
+                    //createNewBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
                     handleUserActions(onlineUser);
                     break;
@@ -171,7 +185,7 @@ public class UserInputHandler {
                     continueActions = false;
                     break;
                 case "R":
-                    deleteBooking(onlineUser);
+                    //deleteBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
                     handleUserActions(onlineUser);
                     break;
@@ -187,7 +201,7 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleAdminActions(User onlineUser) {
+    public void handleAdminActions(UserEntity onlineUser) {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
@@ -214,7 +228,7 @@ public class UserInputHandler {
                     handleAdminActions(onlineUser);
                     break;
                 case "B":
-                    createNewBooking(onlineUser);
+                    //createNewBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
                     handleAdminActions(onlineUser);
                     break;
@@ -224,7 +238,7 @@ public class UserInputHandler {
                     handleAdminActions(onlineUser);
                     break;
                 case "R":
-                    deleteBooking(onlineUser);
+                    //deleteBooking(onlineUser);
                     ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
                     handleAdminActions(onlineUser);
                     break;
