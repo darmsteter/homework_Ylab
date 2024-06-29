@@ -21,4 +21,13 @@ public record WorkplaceEntity(Integer workplaceId,
     public Integer getPK() {
         return workplaceId;
     }
+
+    /**
+     * Возвращает максимальную вместимость рабочего места.
+     *
+     * @return максимальная вместимость рабочего места.
+     */
+    public Integer getMaximumCapacity() {
+        return maximumCapacity;
+    }
 }

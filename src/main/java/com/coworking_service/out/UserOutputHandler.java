@@ -1,10 +1,9 @@
 package com.coworking_service.out;
 
 import com.coworking_service.entity.UserEntity;
+import com.coworking_service.exception.PersistException;
 import com.coworking_service.in.UserInputHandler;
-import com.coworking_service.model.*;
 import com.coworking_service.model.enums.MessageType;
-import com.coworking_service.model.enums.Role;
 import com.coworking_service.util.ConsoleUtil;
 
 /**
@@ -26,7 +25,7 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForOnlineUser(UserEntity onlineUser) {
+    public void greetingsForOnlineUser(UserEntity onlineUser) throws PersistException {
         if (onlineUser.role().equals("admin")) {
             greetingsForAdmin(onlineUser);
         } else {
@@ -39,7 +38,7 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForUser(UserEntity onlineUser) {
+    public void greetingsForUser(UserEntity onlineUser) throws PersistException {
         ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
         userInputHandler.handleUserActions(onlineUser);
     }
@@ -49,9 +48,8 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForAdmin(UserEntity onlineUser) {
+    public void greetingsForAdmin(UserEntity onlineUser) throws PersistException {
         ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
         userInputHandler.handleAdminActions(onlineUser);
     }
-
 }

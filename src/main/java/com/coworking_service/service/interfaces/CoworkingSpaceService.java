@@ -30,5 +30,5 @@ public interface CoworkingSpaceService {
     /**
      * Выводит список всех доступных рабочих пространств.
      */
-    void getSpaces();
+    void getSpaces() throws PersistException;
 }

@@ -1,7 +1,6 @@
 package com.coworking_service;
 
 import com.coworking_service.entity.UserEntity;
-import com.coworking_service.exception.NoSuchUserExistsException;
 import com.coworking_service.exception.PersistException;
 import com.coworking_service.in.UserInputHandler;
 import com.coworking_service.repository.collections_repository.BookingDirectory;
@@ -51,7 +50,7 @@ public class Controller {
     /**
      * Запускает консольное приложение.
      */
-    public void console() {
+    public void console() throws PersistException {
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
         UserEntity onlineUser = null;

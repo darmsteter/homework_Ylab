@@ -154,7 +154,7 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleUserActions(UserEntity onlineUser) {
+    public void handleUserActions(UserEntity onlineUser) throws PersistException {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
@@ -201,7 +201,7 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleAdminActions(UserEntity onlineUser) {
+    public void handleAdminActions(UserEntity onlineUser) throws PersistException {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
