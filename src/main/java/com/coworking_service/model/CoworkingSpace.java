@@ -152,28 +152,6 @@ public class CoworkingSpace {
     }
 
     /**
-     * Печатает строку с перечислением всех индивидуальных мест и конференц-залов с их максимальной вместимостью.
-     */
-    public void printSpaces() {
-        StringBuilder result = new StringBuilder();
-
-        result.append("Индивидуальные рабочие места:\n");
-        for (Map.Entry<IndividualWorkplace, Map<String, Slot>> entry : individualWorkplaces.entrySet()) {
-            IndividualWorkplace workplace = entry.getKey();
-            result.append("Рабочее место #").append(workplace.getWorkplaceID()).append("\n");
-        }
-
-        result.append("Конференц-залы:\n");
-        for (Map.Entry<ConferenceRoom, Map<String, Slot>> entry : conferenceRooms.entrySet()) {
-            ConferenceRoom room = entry.getKey();
-            result.append("Конференц-зал #").append(room.getWorkplaceID())
-                    .append(", максимальная вместимость: ").append(room.getMaximumCapacity()).append("\n");
-        }
-
-        System.out.println(result);
-    }
-
-    /**
      * Ищет индивидуальное рабочее место по его ID.
      *
      * @param workplaceID ID индивидуального рабочего места для поиска

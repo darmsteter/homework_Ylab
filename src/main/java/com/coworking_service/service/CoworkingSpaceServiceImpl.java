@@ -9,6 +9,7 @@ import com.coworking_service.service.interfaces.CoworkingSpaceService;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Реализация сервиса управления рабочими пространствами.
@@ -55,8 +56,22 @@ public record CoworkingSpaceServiceImpl(CoworkingSpace coworkingSpace) implement
 
     /**
      * Выводит список всех рабочих пространств в CoworkingSpace.
+     *
+     * @throws PersistException если возникает ошибка при работе с базой данных
      */
-    public void getSpaces() {
-        coworkingSpace.printSpaces();
+    public void getSpaces() throws PersistException {
+        List<WorkplaceEntity> individualWorkplaces = workplaceRepository.getWorkplacesByType("individual");
+        List<WorkplaceEntity> conferenceRooms = workplaceRepository.getWorkplacesByType("conference");
+
+        System.out.println("Индивидуальные рабочие места");
+        for (WorkplaceEntity workplace : individualWorkplaces) {
+            System.out.println("ИРМ # " + workplace.getPK());
+        }
+
+        System.out.println("\nКонференц-залы:");
+        for (WorkplaceEntity room : conferenceRooms) {
+            System.out.println("КЗ # " + room.getPK() + ", Максимальная вместимость: " + room.getMaximumCapacity());
+        }
     }
+
 }

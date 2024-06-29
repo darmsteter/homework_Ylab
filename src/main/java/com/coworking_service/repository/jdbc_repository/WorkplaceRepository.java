@@ -114,7 +114,7 @@ public class WorkplaceRepository extends JDBCRepository<WorkplaceEntity, Integer
      */
     public List<WorkplaceEntity> getWorkplacesByType(String type) throws PersistException {
         List<WorkplaceEntity> list;
-        String sql = "SELECT * FROM workplace WHERE workplace_type = ?;";
+        String sql = "SELECT * FROM coworking_service.\"Coworking\".workplace WHERE workplace_type = ?;";
         try (PreparedStatement statement = ConnectionHolder.getInstance().getConnection().prepareStatement(sql)) {
             statement.setString(1, type);
             ResultSet rs = statement.executeQuery();
