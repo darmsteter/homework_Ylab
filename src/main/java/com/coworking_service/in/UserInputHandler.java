@@ -8,14 +8,18 @@ import com.coworking_service.entity.enums.MessageType;
 import com.coworking_service.entity.enums.Role;
 import com.coworking_service.repository.BookingRepository;
 import com.coworking_service.repository.UserRepository;
+import com.coworking_service.service.BookingServiceImpl;
+import com.coworking_service.service.CoworkingSpaceServiceImpl;
 import com.coworking_service.service.SlotServiceImpl;
+import com.coworking_service.service.UserServiceImpl;
+import com.coworking_service.service.interfaces.BookingService;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
 import com.coworking_service.service.interfaces.SlotService;
+import com.coworking_service.service.interfaces.UserService;
 import com.coworking_service.util.ConsoleUtil;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -28,21 +32,19 @@ import java.util.Scanner;
  */
 public class UserInputHandler {
     private final Scanner scan = new Scanner(System.in);
-    private final CoworkingSpaceService coworkingSpaceService;
+
     private final UserRepository userRepository = new UserRepository();
     private final BookingRepository bookingRepository = new BookingRepository();
+
+    private final CoworkingSpaceService coworkingSpaceService = new CoworkingSpaceServiceImpl();
+    private final UserService userService = new UserServiceImpl(userRepository);
     private final SlotService slotService = new SlotServiceImpl();
+    private final BookingService bookingService = new BookingServiceImpl(bookingRepository, slotService, userRepository);
 
     /**
      * Конструктор класса UserInputHandler.
-     *
-     * @param coworkingSpaceService сервис управления рабочими пространствами
      */
-    public UserInputHandler(
-            CoworkingSpaceService coworkingSpaceService
-    ) {
-        this.coworkingSpaceService = coworkingSpaceService;
-    }
+    public UserInputHandler() {}
 
     /**
      * Приветствие пользователя и вход в систему или регистрация.
@@ -86,31 +88,22 @@ public class UserInputHandler {
             return "";
         }
 
+        ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
+        String password = ConsoleUtil.getInput(scan);
+
         try {
-            List<User> users = userRepository.getUsersByLogin(login);
-            if (users.isEmpty()) {
-                throw new NoSuchUserExistsException("Пользователь '" + login + "' не найден.");
-            }
-
-            ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
-            String password = ConsoleUtil.getInput(scan);
-
-            User user = users.get(0);
-
-            if (password.equals(user.password())) {
-                ConsoleUtil.printMessage(MessageType.WELCOME_USER);
-                System.out.println(login);
-                return login;
-            } else {
-                ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
-                return "";
-            }
+            User user = userService.validateUser(login, password);
+            ConsoleUtil.printMessage(MessageType.WELCOME_USER);
+            System.out.println(user.login());
+            return user.login();
+        } catch (IncorrectPasswordException e) {
+            ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
+            return "";
         } catch (PersistException | NoSuchUserExistsException e) {
             ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
             return "";
         }
     }
-
 
     /**
      * Регистрация нового пользователя.
@@ -126,24 +119,12 @@ public class UserInputHandler {
         }
 
         try {
-            List<User> existingUsers = userRepository.getUsersByLogin(login);
-            if (existingUsers != null && !existingUsers.isEmpty()) {
-                ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-                ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
-                return;
-            }
-
             ConsoleUtil.printMessage(MessageType.PROMPT_PASSWORD);
-            String password = ConsoleUtil.getInput(scan);
-
-            User newUser = new User(null, login, password, Role.USER.name());
-            userRepository.create(newUser);
-
+            userService.registerUser(login, ConsoleUtil.getInput(scan));
             ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
         } catch (PersistException | WrongDataException | SQLException e) {
             ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
             ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
-            e.printStackTrace();
         }
     }
 
@@ -317,11 +298,6 @@ public class UserInputHandler {
         LocalDate date;
         try {
             date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
-
-            if (date.isBefore(LocalDate.now())) {
-                System.out.println("Вы не можете забронировать рабочее пространство на прошедшую дату.");
-                return;
-            }
         } catch (DateTimeParseException e) {
             System.out.println("Некорректный формат даты. Процесс создания брони прерван.");
             return;
@@ -336,102 +312,63 @@ public class UserInputHandler {
                 Например, для брони с 9:00 до 13:00 необходимо ввести
                 2
                 4\
-                        
+                       \s
                 2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.""");
         int slotNumber = scan.nextInt();
         int numberOfSlots = scan.nextInt();
         scan.nextLine();
 
-        Time bookingTimeFrom = slotService.calculateBookingTimeFrom(slotNumber);
-        Time bookingTimeTo = slotService.calculateBookingTimeTo(slotNumber, numberOfSlots);
-
         try {
-            boolean overlap = bookingRepository.hasOverlap(workplaceID, Date.valueOf(date), bookingTimeFrom, bookingTimeTo);
-            if (overlap) {
-                System.out.println("На указанное время это рабочее место уже занято. Пожалуйста, выберите другое время или место.");
-                return;
-            }
-
-            int userId = onlineUser.getPK();
-
-            Booking booking = new Booking(null, userId, workplaceID, Date.valueOf(date), bookingTimeFrom, bookingTimeTo);
-            bookingRepository.create(booking);
-
+            bookingService.createNewBooking(onlineUser, date, workplaceID, slotNumber, numberOfSlots);
             System.out.println("Бронь успешно создана.");
-        } catch (PersistException | NoSuchUserExistsException e) {
+        } catch (PersistException e) {
             System.out.println("Ошибка при создании брони: " + e.getMessage());
         } catch (SQLException | WrongDataException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         }
     }
-
 
     /**
      * Удаляет бронирование пользователя по логину, дате и начальному слоту.
      */
-    public void deleteBooking(User onlineUser) throws PersistException {
+    public void deleteBooking(User onlineUser) {
         String userLogin;
         if (Objects.equals(onlineUser.getRole(), Role.ADMINISTRATOR.name())) {
             System.out.println("Введите логин пользователя, чью бронь вы хотите удалить:");
-            userLogin = ConsoleUtil.getInput(scan);
-
-            List<User> users = userRepository.getUsersByLogin(userLogin);
-            if (users.isEmpty()) {
-                System.out.println("Пользователь с таким логином не существует.");
-                return;
-            }
+            userLogin = scan.nextLine();
         } else {
             userLogin = onlineUser.getLogin();
         }
 
         System.out.println("Введите дату бронирования (формат ГГГГ-ММ-ДД):");
-        String dateInput = ConsoleUtil.getInput(scan);
+        String dateInput = scan.nextLine();
+
         LocalDate date;
         try {
             date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (DateTimeParseException e) {
-            System.out.println("Некорректный формат даты. Процесс удаления брони прерван.");
+            System.out.println("Некорректный формат даты. Процесс создания брони прерван.");
             return;
         }
 
         try {
-            User user = userRepository.getUsersByLogin(userLogin).get(0);
-
-            if (user == null) {
-                System.out.println("Пользователь с таким логином не найден.");
-                return;
-            }
-
-            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), user.getPK());
-
-            if (bookings == null || bookings.isEmpty()) {
+            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), userRepository.getUsersByLogin(userLogin).get(0).getPK());
+            if (bookings == null) {
                 System.out.println("У пользователя нет бронирований на указанную дату.");
                 return;
             }
 
-            System.out.println("Список бронирований пользователя:");
+            System.out.println("Список бронирований пользователя на указанную дату:");
             for (int i = 0; i < bookings.size(); i++) {
                 System.out.println((i + 1) + ". " + bookings.get(i));
             }
 
             System.out.println("Введите номер бронирования для удаления:");
-            int choice = scan.nextInt();
-            scan.nextLine();
+            int choice = Integer.parseInt(ConsoleUtil.getInput(scan));
 
-            if (choice < 1 || choice > bookings.size()) {
-                System.out.println("Некорректный номер бронирования.");
-                return;
-            }
-
-            Booking bookingToDelete = bookings.get(choice - 1);
-            bookingRepository.delete(bookingToDelete.getPK());
-
-            System.out.println("Бронь успешно удалена.");
-
-        } catch (PersistException | NoSuchUserExistsException e) {
+            bookingService.deleteBooking(onlineUser, userLogin, dateInput, choice);
+        } catch (PersistException | WrongDataException e) {
             System.out.println("Ошибка при удалении бронирования: " + e.getMessage());
-        } catch (WrongDataException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -444,6 +381,12 @@ public class UserInputHandler {
         try {
             LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
             List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), null);
+
+            if (bookings == null) {
+                System.out.println("Нет бронирований на указанную дату.");
+                return;
+            }
+
             for (int i = 0; i < bookings.size(); i++) {
                 System.out.println((i + 1) + ". " + bookings.get(i));
             }
@@ -482,7 +425,7 @@ public class UserInputHandler {
 
             List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(null, userId);
 
-            if (bookings.isEmpty()) {
+            if (bookings == null) {
                 System.out.println("У пользователя с логином '" + login + "' нет бронирований.");
             } else {
                 System.out.println("Брони пользователя '" + login + "':");

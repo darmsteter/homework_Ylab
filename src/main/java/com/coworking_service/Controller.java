@@ -2,12 +2,11 @@ package com.coworking_service;
 
 import com.coworking_service.entity.User;
 import com.coworking_service.exception.PersistException;
+import com.coworking_service.exception.WrongDataException;
 import com.coworking_service.in.UserInputHandler;
 import com.coworking_service.entity.enums.MessageType;
 import com.coworking_service.out.UserOutputHandler;
 import com.coworking_service.repository.UserRepository;
-import com.coworking_service.service.CoworkingSpaceServiceImpl;
-import com.coworking_service.service.interfaces.CoworkingSpaceService;
 import com.coworking_service.util.ConsoleUtil;
 
 import java.util.List;
@@ -16,10 +15,7 @@ import java.util.List;
  * Контроллер для управления консольным интерфейсом приложения коворкинг-сервиса.
  */
 public class Controller {
-    private final CoworkingSpaceService coworkingSpaceService = new CoworkingSpaceServiceImpl();
-
-    private final UserInputHandler userInputHandler = new UserInputHandler(
-            coworkingSpaceService);
+    private final UserInputHandler userInputHandler = new UserInputHandler();
     private final UserOutputHandler userOutputHandler = new UserOutputHandler(
             userInputHandler
     );
@@ -29,13 +25,12 @@ public class Controller {
     /**
      * Запускает консольное приложение.
      */
-    public void console() throws PersistException {
+    public void console() throws PersistException, WrongDataException {
         ConsoleUtil.printMessage(MessageType.WELCOME);
 
         User onlineUser = null;
-        boolean running = true;
 
-        while (running) {
+        while (true) {
             if (onlineUser == null) {
                 String onlineUserLogin = userInputHandler.greeting();
 
@@ -53,6 +48,8 @@ public class Controller {
                     }
                 } catch (PersistException e) {
                     ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
+                } catch (WrongDataException e) {
+                    throw new RuntimeException(e);
                 }
             } else {
                 userOutputHandler.greetingsForOnlineUser(onlineUser);

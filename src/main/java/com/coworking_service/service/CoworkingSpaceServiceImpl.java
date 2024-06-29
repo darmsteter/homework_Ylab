@@ -1,15 +1,11 @@
 package com.coworking_service.service;
 
-import com.coworking_service.entity.Booking;
 import com.coworking_service.entity.Workplace;
 import com.coworking_service.exception.PersistException;
 import com.coworking_service.exception.WrongDataException;
-import com.coworking_service.repository.BookingRepository;
 import com.coworking_service.repository.WorkplaceRepository;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
 
-import java.time.LocalDate;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -19,8 +15,10 @@ import java.util.List;
  */
 public class CoworkingSpaceServiceImpl implements CoworkingSpaceService {
     private final WorkplaceRepository workplaceRepository = new WorkplaceRepository();
-    private final BookingRepository bookingRepository = new BookingRepository();
 
+    /**
+     * Добавляет новое индивидуальное рабочее место в коворкинге.
+     */
     public void addIndividualWorkplaceToDatabase() {
         try {
             Workplace workplace = new Workplace(null, 1, "individual");
@@ -33,7 +31,11 @@ public class CoworkingSpaceServiceImpl implements CoworkingSpaceService {
             System.err.println("Ошибка SQL при создании индивидуального рабочего места: " + e.getMessage());
         }
     }
-
+    /**
+     * Добавляет новый конференц-зал с указанной вместимостью в коворкинге.
+     *
+     * @param maxCapacity максимальная вместимость конференц-зала
+     */
     public void addConferenceRoomToDatabase(int maxCapacity) {
         try {
             Workplace workplace = new Workplace(null, maxCapacity, "conference");
@@ -65,9 +67,5 @@ public class CoworkingSpaceServiceImpl implements CoworkingSpaceService {
         for (Workplace room : conferenceRooms) {
             System.out.println("КЗ # " + room.getPK() + ", Максимальная вместимость: " + room.getMaximumCapacity());
         }
-    }
-
-    public List<Booking> sortedByDate(LocalDate date) throws PersistException {
-        return bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), null);
     }
 }
