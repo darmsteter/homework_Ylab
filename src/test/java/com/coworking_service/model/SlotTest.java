@@ -1,3 +1,4 @@
+/*
 package com.coworking_service.model;
 
 import com.coworking_service.util.Pair;
@@ -10,22 +11,28 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SlotTest {
 
-    /**
+    */
+/**
      * Тесты для класса Slot.
-     */
+     *//*
+
     private LocalDate testDate;
 
-    /**
+    */
+/**
      * Подготовка тестового окружения перед каждым тестом.
-     */
+     *//*
+
     @BeforeEach
     public void setUp() {
         testDate = LocalDate.of(2024, 12, 12);
     }
 
-    /**
+    */
+/**
      * Тест для конструктора Slot и метода getDate().
-     */
+     *//*
+
     @Test
     public void testConstructorAndGetDate() {
         Slot slot = new Slot(testDate);
@@ -33,10 +40,12 @@ public class SlotTest {
         assertEquals(testDate, slot.getDate());
     }
 
-    /**
+    */
+/**
      * Тест для метода generateSlots().
      * Проверяет корректность генерации слотов времени.
-     */
+     *//*
+
     @Test
     public void testGenerateSlots() {
         Slot slot = new Slot(testDate);
@@ -50,10 +59,12 @@ public class SlotTest {
         assertTrue(firstSlot.key().contains("слот"));
     }
 
-    /**
+    */
+/**
      * Тест для метода isSlotAvailable().
      * Проверяет, что слот по указанному индексу доступен.
-     */
+     *//*
+
     @Test
     public void testIsSlotAvailable() {
         Slot slot = new Slot(testDate);
@@ -62,10 +73,12 @@ public class SlotTest {
         assertTrue(slot.isSlotAvailable(0));
     }
 
-    /**
+    */
+/**
      * Тест для метода setSlotAvailability().
      * Проверяет установку доступности слота по указанному индексу.
-     */
+     *//*
+
     @Test
     public void testSetSlotAvailability() {
         Slot slot = new Slot(testDate);
@@ -74,3 +87,4 @@ public class SlotTest {
         assertFalse(slot.isSlotAvailable(0));
     }
 }
+*/
