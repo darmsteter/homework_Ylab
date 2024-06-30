@@ -3,20 +3,31 @@ plugins {
     id 'org.liquibase.gradle' version '2.2.0'
 }
 
+ext {
+    liquibaseVersion = '4.24.0'
+    liquibaseGroovyDslVersion = '2.1.1'
+    picocliVersion = '4.7.5'
+    snakeyamlVersion = '2.0'
+    postgresqlVersion = '42.6.0'
+    junitJupiterVersion = '5.7.2'
+    junitPlatformVersion = '1.7.2'
+    mockitoVersion = '3.11.2'
+}
+
 dependencies {
-    liquibaseRuntime 'org.liquibase:liquibase-core:4.24.0'
-    liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:2.1.1'
-    liquibaseRuntime 'info.picocli:picocli:4.7.5'
-    liquibaseRuntime 'org.yaml:snakeyaml:2.0'
+    liquibaseRuntime "org.liquibase:liquibase-core:${liquibaseVersion}"
+    liquibaseRuntime "org.liquibase:liquibase-groovy-dsl:${liquibaseGroovyDslVersion}"
+    liquibaseRuntime "info.picocli:picocli:${picocliVersion}"
+    liquibaseRuntime "org.yaml:snakeyaml:${snakeyamlVersion}"
 
-    implementation 'org.postgresql:postgresql:42.6.0'
-    runtimeOnly 'org.postgresql:postgresql:42.6.0'
-    liquibaseRuntime 'org.postgresql:postgresql:42.6.0'
+    implementation "org.postgresql:postgresql:${postgresqlVersion}"
+    runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
+    liquibaseRuntime "org.postgresql:postgresql:${postgresqlVersion}"
 
-    testImplementation libs.junit.jupiter
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'org.mockito:mockito-core:3.11.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.11.2'
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
 }
 
 apply plugin: 'org.liquibase.gradle'
