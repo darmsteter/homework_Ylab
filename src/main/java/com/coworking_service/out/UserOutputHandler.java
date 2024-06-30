@@ -6,7 +6,6 @@ import com.coworking_service.exception.PersistException;
 import com.coworking_service.exception.WrongDataException;
 import com.coworking_service.in.UserInputHandler;
 import com.coworking_service.entity.enums.MessageType;
-import com.coworking_service.util.ConsoleUtil;
 
 /**
  * Класс для обработки вывода данных пользователю в консольном приложении.
@@ -41,7 +40,7 @@ public class UserOutputHandler {
      * @param onlineUser объект пользователя
      */
     public void greetingsForUser(User onlineUser) throws PersistException {
-        ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+        System.out.println(MessageType.ACTIONS_FOR_USER.getMessage());
         userInputHandler.handleUserActions(onlineUser);
     }
 
@@ -51,7 +50,7 @@ public class UserOutputHandler {
      * @param onlineUser объект пользователя
      */
     public void greetingsForAdmin(User onlineUser) throws PersistException {
-        ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+        System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
         userInputHandler.handleAdminActions(onlineUser);
     }
 }
