@@ -12,22 +12,40 @@ ext {
     junitJupiterVersion = '5.7.2'
     junitPlatformVersion = '1.7.2'
     mockitoVersion = '3.11.2'
+    testcontainersVersion = '1.16.0'
+
+    liquibaseRuntimeDependencies = [
+            "org.liquibase:liquibase-core:${liquibaseVersion}",
+            "org.liquibase:liquibase-groovy-dsl:${liquibaseGroovyDslVersion}",
+            "info.picocli:picocli:${picocliVersion}",
+            "org.yaml:snakeyaml:${snakeyamlVersion}",
+            "org.postgresql:postgresql:${postgresqlVersion}"
+    ]
+    implementationDependencies = [
+            "org.postgresql:postgresql:${postgresqlVersion}"
+    ]
+    runtimeOnlyDependencies = [
+            "org.postgresql:postgresql:${postgresqlVersion}"
+    ]
+    testImplementationDependencies = [
+            "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
+            "org.mockito:mockito-core:${mockitoVersion}",
+            "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+            "org.testcontainers:testcontainers:${testcontainersVersion}",
+            "org.testcontainers:junit-jupiter:${testcontainersVersion}",
+            "org.testcontainers:postgresql:${testcontainersVersion}"
+    ]
+    testRuntimeOnlyDependencies = [
+            "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}"
+    ]
 }
 
 dependencies {
-    liquibaseRuntime "org.liquibase:liquibase-core:${liquibaseVersion}"
-    liquibaseRuntime "org.liquibase:liquibase-groovy-dsl:${liquibaseGroovyDslVersion}"
-    liquibaseRuntime "info.picocli:picocli:${picocliVersion}"
-    liquibaseRuntime "org.yaml:snakeyaml:${snakeyamlVersion}"
-
-    implementation "org.postgresql:postgresql:${postgresqlVersion}"
-    runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
-    liquibaseRuntime "org.postgresql:postgresql:${postgresqlVersion}"
-
-    testImplementation "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}"
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+    liquibaseRuntime liquibaseRuntimeDependencies
+    implementation implementationDependencies
+    runtimeOnly runtimeOnlyDependencies
+    testImplementation testImplementationDependencies
+    testRuntimeOnly testRuntimeOnlyDependencies
 }
 
 apply plugin: 'org.liquibase.gradle'
