@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <include file="00-create-schemas-and-sequence.xml" relativeToChangelogFile="true"/>
+    <include file="01-delete-service-tables-from-public.xml" relativeToChangelogFile="true"/>
+    <include file="02-create-tables.xml" relativeToChangelogFile="true"/>
+    <include file="03-fill-default-data.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

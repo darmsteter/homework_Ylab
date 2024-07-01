@@ -1,59 +1,45 @@
 package com.coworking_service;
 
-import com.coworking_service.exception.NoSuchUserExistsException;
+import com.coworking_service.entity.User;
+import com.coworking_service.exception.PersistException;
+import com.coworking_service.exception.WrongDataException;
 import com.coworking_service.in.UserInputHandler;
-import com.coworking_service.repository.BookingDirectory;
-import com.coworking_service.model.CoworkingSpace;
-import com.coworking_service.model.User;
-import com.coworking_service.repository.UserDirectory;
-import com.coworking_service.model.enums.MessageType;
-import com.coworking_service.model.enums.Role;
+import com.coworking_service.entity.enums.MessageType;
 import com.coworking_service.out.UserOutputHandler;
-import com.coworking_service.service.BookingServiceImpl;
-import com.coworking_service.service.CoworkingSpaceServiceImpl;
-import com.coworking_service.service.UserDirectoryServiceImpl;
-import com.coworking_service.service.interfaces.BookingService;
-import com.coworking_service.service.interfaces.CoworkingSpaceService;
-import com.coworking_service.service.interfaces.UserDirectoryService;
-import com.coworking_service.util.ConsoleUtil;
+import com.coworking_service.repository.UserRepository;
+
+import java.util.List;
 
 /**
  * Контроллер для управления консольным интерфейсом приложения коворкинг-сервиса.
  */
 public class Controller {
+    private UserInputHandler userInputHandler = new UserInputHandler();
+    private UserOutputHandler userOutputHandler = new UserOutputHandler(userInputHandler);
+    private UserRepository userRepository = new UserRepository();
 
-    private final UserDirectoryService userDirectoryService = new UserDirectoryServiceImpl(
-            new UserDirectory(
-                    new User("admin", "admin", Role.ADMINISTRATOR)
-            )
-    );
+    public void setUserInputHandler(UserInputHandler userInputHandler) {
+        this.userInputHandler = userInputHandler;
+        this.userOutputHandler = new UserOutputHandler(userInputHandler);
+    }
 
-    private final CoworkingSpace coworkingSpace = new CoworkingSpace();
-    private final BookingDirectory bookingDirectory = new BookingDirectory();
-    private final BookingService bookingService = new BookingServiceImpl(coworkingSpace, bookingDirectory);
-    private final CoworkingSpaceService coworkingSpaceService = new CoworkingSpaceServiceImpl(coworkingSpace);
+    public void setUserOutputHandler(UserOutputHandler userOutputHandler) {
+        this.userOutputHandler = userOutputHandler;
+    }
 
-    private final UserInputHandler userInputHandler = new UserInputHandler(
-            bookingService,
-            userDirectoryService,
-            coworkingSpaceService);
-    private final UserOutputHandler userOutputHandler = new UserOutputHandler(
-            userInputHandler
-    );
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Запускает консольное приложение.
      */
-    public void console() {
-        coworkingSpace.addConferenceRoom(10);
-        coworkingSpace.addIndividualWorkplace();
-        coworkingSpace.addIndividualWorkplace();
-        ConsoleUtil.printMessage(MessageType.WELCOME);
+    public void console() throws PersistException, WrongDataException {
+        System.out.println(MessageType.WELCOME.getMessage());
 
         User onlineUser = null;
-        boolean running = true;
 
-        while (running) {
+        while (true) {
             if (onlineUser == null) {
                 String onlineUserLogin = userInputHandler.greeting();
 
@@ -62,16 +48,20 @@ public class Controller {
                 }
 
                 try {
-                    onlineUser = userDirectoryService.findUserByLogin(onlineUserLogin);
-                    userOutputHandler.greetingsForOnlineUser(onlineUser);
-                    onlineUser = null;
-
-                } catch (NoSuchUserExistsException e) {
-                    ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
+                    List<User> users = userRepository.getUsersByLogin(onlineUserLogin);
+                    if (users.isEmpty()) {
+                        System.out.println(MessageType.LOGIN_NOT_FOUND_ERROR.getMessage());
+                    } else {
+                        onlineUser = users.get(0);
+                        userOutputHandler.greetingsForOnlineUser(onlineUser);
+                    }
+                } catch (PersistException e) {
+                    System.out.println(MessageType.LOGIN_NOT_FOUND_ERROR.getMessage());
+                } catch (WrongDataException e) {
+                    throw new RuntimeException(e);
                 }
             } else {
                 userOutputHandler.greetingsForOnlineUser(onlineUser);
-
                 onlineUser = null;
             }
         }

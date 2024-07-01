@@ -1,10 +1,11 @@
 package com.coworking_service.out;
 
+import com.coworking_service.entity.User;
+import com.coworking_service.entity.enums.Role;
+import com.coworking_service.exception.PersistException;
+import com.coworking_service.exception.WrongDataException;
 import com.coworking_service.in.UserInputHandler;
-import com.coworking_service.model.*;
-import com.coworking_service.model.enums.MessageType;
-import com.coworking_service.model.enums.Role;
-import com.coworking_service.util.ConsoleUtil;
+import com.coworking_service.entity.enums.MessageType;
 
 /**
  * Класс для обработки вывода данных пользователю в консольном приложении.
@@ -19,13 +20,14 @@ public class UserOutputHandler {
     public UserOutputHandler(UserInputHandler userInputHandler) {
         this.userInputHandler = userInputHandler;
     }
+
     /**
-     * Приветствует пользователя в зависимости от его роли (администратор или обычный пользователь).
+     * Приветствует онлайн-пользователя и определяет его роль для предоставления вариантов действий.
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForOnlineUser(User onlineUser) {
-        if (onlineUser.role().equals(Role.ADMINISTRATOR)) {
+    public void greetingsForOnlineUser(User onlineUser) throws PersistException, WrongDataException {
+        if (onlineUser.role().equals(Role.ADMINISTRATOR.name())) {
             greetingsForAdmin(onlineUser);
         } else {
             greetingsForUser(onlineUser);
@@ -37,8 +39,8 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForUser(User onlineUser) {
-        ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+    public void greetingsForUser(User onlineUser) throws PersistException {
+        System.out.println(MessageType.ACTIONS_FOR_USER.getMessage());
         userInputHandler.handleUserActions(onlineUser);
     }
 
@@ -47,8 +49,8 @@ public class UserOutputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void greetingsForAdmin(User onlineUser) {
-        ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+    public void greetingsForAdmin(User onlineUser) throws PersistException {
+        System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
         userInputHandler.handleAdminActions(onlineUser);
     }
 }

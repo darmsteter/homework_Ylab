@@ -1,20 +1,30 @@
 package com.coworking_service.in;
 
-import com.coworking_service.exception.IncorrectPasswordException;
-import com.coworking_service.exception.NoSuchUserExistsException;
-import com.coworking_service.exception.UserAlreadyExistsException;
-import com.coworking_service.model.*;
-import com.coworking_service.model.enums.Commands;
-import com.coworking_service.model.enums.MessageType;
-import com.coworking_service.model.enums.Role;
+import com.coworking_service.entity.Booking;
+import com.coworking_service.entity.User;
+import com.coworking_service.exception.*;
+import com.coworking_service.entity.enums.Commands;
+import com.coworking_service.entity.enums.MessageType;
+import com.coworking_service.entity.enums.Role;
+import com.coworking_service.repository.BookingRepository;
+import com.coworking_service.repository.UserRepository;
+import com.coworking_service.service.BookingServiceImpl;
+import com.coworking_service.service.CoworkingSpaceServiceImpl;
+import com.coworking_service.service.SlotServiceImpl;
+import com.coworking_service.service.UserServiceImpl;
 import com.coworking_service.service.interfaces.BookingService;
 import com.coworking_service.service.interfaces.CoworkingSpaceService;
-import com.coworking_service.service.interfaces.UserDirectoryService;
+import com.coworking_service.service.interfaces.SlotService;
+import com.coworking_service.service.interfaces.UserService;
 import com.coworking_service.util.ConsoleUtil;
 
+import java.sql.Date;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -22,26 +32,19 @@ import java.util.Scanner;
  */
 public class UserInputHandler {
     private final Scanner scan = new Scanner(System.in);
-    private final BookingService bookingService;
-    private final UserDirectoryService userDirectoryService;
-    private final CoworkingSpaceService coworkingSpaceService;
+
+    private final UserRepository userRepository = new UserRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
+
+    private final CoworkingSpaceService coworkingSpaceService = new CoworkingSpaceServiceImpl();
+    private final UserService userService = new UserServiceImpl(userRepository);
+    private final SlotService slotService = new SlotServiceImpl();
+    private final BookingService bookingService = new BookingServiceImpl(bookingRepository, slotService, userRepository);
 
     /**
      * Конструктор класса UserInputHandler.
-     *
-     * @param bookingService        сервис управления бронированиями
-     * @param userDirectoryService  сервис управления пользовательскими данными
-     * @param coworkingSpaceService сервис управления рабочими пространствами
      */
-    public UserInputHandler(
-            BookingService bookingService,
-            UserDirectoryService userDirectoryService,
-            CoworkingSpaceService coworkingSpaceService
-    ) {
-        this.bookingService = bookingService;
-        this.userDirectoryService = userDirectoryService;
-        this.coworkingSpaceService = coworkingSpaceService;
-    }
+    public UserInputHandler() {}
 
     /**
      * Приветствие пользователя и вход в систему или регистрация.
@@ -52,18 +55,25 @@ public class UserInputHandler {
         String onlineUserLogin = "";
 
         while (onlineUserLogin.isEmpty()) {
-            ConsoleUtil.printMessage(MessageType.INSTRUCTIONS);
+            System.out.println(MessageType.INSTRUCTIONS.getMessage());
             String userResponse = ConsoleUtil.getInput(scan);
 
-            switch (userResponse.toUpperCase()) {
-                case "R":
+
+            Commands command = Commands.fromString(userResponse);
+            if (command == null) {
+                System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
+                continue;
+            }
+
+            switch (command) {
+                case REGISTRATION:
                     registration();
                     break;
-                case "L":
+                case LOG_IN:
                     onlineUserLogin = logIn();
                     break;
                 default:
-                    ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                    System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
                     break;
             }
         }
@@ -77,32 +87,37 @@ public class UserInputHandler {
      * @throws NoSuchUserExistsException если пользователь с указанным логином не найден
      */
     private String logIn() throws NoSuchUserExistsException {
-        ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-        ConsoleUtil.printMessage(MessageType.PROMPT_LOGIN);
+        System.out.println(MessageType.RETURN_TO_START_PAGE.getMessage());
+        System.out.println(MessageType.PROMPT_LOGIN.getMessage());
 
         String login = ConsoleUtil.getInput(scan);
         if (login.equalsIgnoreCase(Commands.START_PAGE.getCommand())) {
             return "";
         }
+
+        System.out.println(MessageType.PROMPT_PASSWORD.getMessage());
+        String password = ConsoleUtil.getInput(scan);
+
         try {
-            String userLogin = userDirectoryService.logIn(login, scan);
-            ConsoleUtil.printMessage(MessageType.WELCOME_USER);
-            System.out.println(userLogin);
-            return userLogin;
-        } catch (NoSuchUserExistsException e) {
-            ConsoleUtil.printMessage(MessageType.LOGIN_NOT_FOUND_ERROR);
+            User user = userService.validateUser(login, password);
+            System.out.println(MessageType.WELCOME_USER.getMessage());
+            System.out.println(user.login());
+            return user.login();
         } catch (IncorrectPasswordException e) {
-            ConsoleUtil.printMessage(MessageType.INCORRECT_PASSWORD_ERROR);
+            System.out.println(MessageType.INCORRECT_PASSWORD_ERROR.getMessage());
+            return "";
+        } catch (PersistException | NoSuchUserExistsException e) {
+            System.out.println(MessageType.LOGIN_NOT_FOUND_ERROR.getMessage());
+            return "";
         }
-        return "";
     }
 
     /**
      * Регистрация нового пользователя.
      */
     public void registration() {
-        ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-        ConsoleUtil.printMessage(MessageType.PROMPT_LOGIN);
+        System.out.println(MessageType.RETURN_TO_START_PAGE.getMessage());
+        System.out.println(MessageType.PROMPT_LOGIN.getMessage());
 
         String login = ConsoleUtil.getInput(scan);
 
@@ -111,11 +126,12 @@ public class UserInputHandler {
         }
 
         try {
-            userDirectoryService.registerUser(login, scan);
-            ConsoleUtil.printMessage(MessageType.REGISTRATION_SUCCESS);
-        } catch (UserAlreadyExistsException e) {
-            ConsoleUtil.printMessage(MessageType.RETURN_TO_START_PAGE);
-            ConsoleUtil.printMessage(MessageType.LOGIN_ALREADY_EXISTS_ERROR);
+            System.out.println(MessageType.PROMPT_PASSWORD.getMessage());
+            userService.registerUser(login, ConsoleUtil.getInput(scan));
+            System.out.println(MessageType.REGISTRATION_SUCCESS.getMessage());
+        } catch (PersistException | WrongDataException | SQLException e) {
+            System.out.println(MessageType.RETURN_TO_START_PAGE.getMessage());
+            System.out.println(MessageType.LOGIN_ALREADY_EXISTS_ERROR.getMessage());
         }
     }
 
@@ -124,43 +140,49 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleUserActions(User onlineUser) {
+    public void handleUserActions(User onlineUser) throws PersistException {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
 
-            switch (userResponse.toUpperCase()) {
-                case "D":
+            Commands command = Commands.fromString(userResponse);
+            if (command == null) {
+                System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
+                continue;
+            }
+
+            switch (command) {
+                case SEARCH_BOOKING_BY_DATE:
                     handleSortedByDate();
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    System.out.println(MessageType.ACTIONS_FOR_USER.getMessage());
                     handleUserActions(onlineUser);
                     break;
-                case "L":
+                case LIST_OF_WORKPLACES:
                     coworkingSpaceService.getSpaces();
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    System.out.println(MessageType.ACTIONS_FOR_USER.getMessage());
                     handleUserActions(onlineUser);
                     break;
-                case "B":
+                case CREATE_NEW_BOOKING:
                     createNewBooking(onlineUser);
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    System.out.println(MessageType.ACTIONS_FOR_USER.getMessage());
                     handleUserActions(onlineUser);
                     break;
-                case "M":
+                case SEARCH_BOOKING_BY_LOGIN:
                     getBookingByUserLogin(onlineUser.login());
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    System.out.println(MessageType.ACTIONS_FOR_USER.getMessage());
                     handleUserActions(onlineUser);
                     break;
-                case "E":
+                case EXIT:
                     greeting();
                     continueActions = false;
                     break;
-                case "R":
+                case DELETE_BOOKING:
                     deleteBooking(onlineUser);
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_USER);
+                    System.out.println(MessageType.ACTIONS_FOR_USER.getMessage());
                     handleUserActions(onlineUser);
                     break;
                 default:
-                    ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                    System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
                     break;
             }
         }
@@ -171,98 +193,126 @@ public class UserInputHandler {
      *
      * @param onlineUser объект пользователя
      */
-    public void handleAdminActions(User onlineUser) {
+    public void handleAdminActions(User onlineUser) throws PersistException {
         boolean continueActions = true;
         while (continueActions) {
             String userResponse = ConsoleUtil.getInput(scan);
 
-            switch (userResponse.toUpperCase()) {
-                case "D":
+            Commands command = Commands.fromString(userResponse);
+            if (command == null) {
+                System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
+                continue;
+            }
+
+            switch (command) {
+                case SEARCH_BOOKING_BY_DATE:
                     handleSortedByDate();
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
                     handleAdminActions(onlineUser);
                     break;
-                case "I":
+                case CREATE_INDIVIDUAL_WORKPLACE:
                     createNewIndividualWorkplace();
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
                     handleAdminActions(onlineUser);
                     break;
-                case "C":
+                case CREATE_CONFERENCE_ROOM:
                     createNewConferenceRoom();
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
                     handleAdminActions(onlineUser);
                     break;
-                case "L":
+                case LIST_OF_WORKPLACES:
                     coworkingSpaceService.getSpaces();
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
                     handleAdminActions(onlineUser);
                     break;
-                case "B":
+                case CREATE_NEW_BOOKING:
                     createNewBooking(onlineUser);
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
                     handleAdminActions(onlineUser);
                     break;
-                case "M":
+                case SEARCH_BOOKING_BY_LOGIN:
                     getLoginForSearch();
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
                     handleAdminActions(onlineUser);
                     break;
-                case "R":
+                case DELETE_BOOKING:
                     deleteBooking(onlineUser);
-                    ConsoleUtil.printMessage(MessageType.ACTIONS_FOR_ADMINISTRATOR);
+                    System.out.println(MessageType.ACTIONS_FOR_ADMINISTRATOR.getMessage());
                     handleAdminActions(onlineUser);
                     break;
-                case "E":
+                case EXIT:
                     greeting();
                     continueActions = false;
                     break;
                 default:
-                    ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                    System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
                     break;
             }
         }
     }
 
     /**
-     * Создает новое индивидуальное рабочее место.
+     * Создает новое индивидуальное рабочее место и добавляет его в базу данных.
      */
     public void createNewIndividualWorkplace() {
-        ConsoleUtil.printMessage(MessageType.CREATING_INDIVIDUAL_WORKPLACE);
+        System.out.println(MessageType.PROMPT_CREATING_INDIVIDUAL_WORKPLACE.getMessage());
         String userResponse = ConsoleUtil.getInput(scan);
-        switch (userResponse.toUpperCase()) {
-            case "Y":
-                coworkingSpaceService.addIndividualWorkplace();
-                ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
+
+        Commands command = Commands.fromString(userResponse);
+        if (command == null) {
+            System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
+            return;
+        }
+
+        switch (command) {
+            case YES:
+                try {
+                    coworkingSpaceService.addIndividualWorkplaceToDatabase();
+                    System.out.println(MessageType.CREATING_WORKPLACE_SUCCESS.getMessage());
+                } catch (PersistException e) {
+                    System.out.println(MessageType.INTERNAL_ERROR.getMessage());
+                }
                 break;
-            case "N":
-                ConsoleUtil.printMessage(MessageType.CANCEL_CREATING_WORKPLACE);
+            case NO:
+                System.out.println(MessageType.CANCEL_CREATING_WORKPLACE.getMessage());
                 break;
             default:
-                ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
                 break;
         }
     }
 
+
     /**
-     * Создает новый конференц-зал.
+     * Создает новый конференц-зал и добавляет его в базу данных.
      */
     public void createNewConferenceRoom() {
-        ConsoleUtil.printMessage(MessageType.CREATING_CONFERENCE_ROOM);
+        System.out.println(MessageType.PROMPT_CREATING_CONFERENCE_ROOM.getMessage());
         String userResponse = ConsoleUtil.getInput(scan);
 
-        switch (userResponse.toUpperCase()) {
-            case "Y":
-                ConsoleUtil.printMessage(MessageType.NUMBER_OF_PLACE);
-                int maxCapacity = scan.nextInt();
-                scan.nextLine();
-                coworkingSpaceService.addConferenceRoom(maxCapacity);
-                ConsoleUtil.printMessage(MessageType.CREATING_WORKPLACE_SUCCESS);
+        Commands command = Commands.fromString(userResponse);
+        if (command == null) {
+            System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
+            return;
+        }
+
+        switch (command) {
+            case YES:
+                try {
+                    System.out.println(MessageType.PROMPT_NUMBER_OF_PLACE.getMessage());
+                    int maxCapacity = ConsoleUtil.getInputInt(scan);
+                    ConsoleUtil.getInput(scan);
+                    coworkingSpaceService.addConferenceRoomToDatabase(maxCapacity);
+                    System.out.println(MessageType.CREATING_WORKPLACE_SUCCESS.getMessage());
+                } catch (PersistException e) {
+                    System.out.println(MessageType.INTERNAL_ERROR.getMessage());
+                }
                 break;
-            case "N":
-                ConsoleUtil.printMessage(MessageType.CANCEL_CREATING_WORKPLACE);
+            case NO:
+                System.out.println(MessageType.CANCEL_CREATING_WORKPLACE.getMessage());
                 break;
             default:
-                ConsoleUtil.printMessage(MessageType.INVALID_COMMAND_ERROR);
+                System.out.println(MessageType.INVALID_COMMAND_ERROR.getMessage());
                 break;
         }
     }
@@ -273,42 +323,28 @@ public class UserInputHandler {
      * @param onlineUser объект пользователя
      */
     public void createNewBooking(User onlineUser) {
-        System.out.println("На какую дату вы хотите создать бронь? Формат ГГГГ-ММ-ДД");
-        String dateInput = ConsoleUtil.getInput(scan);
-
-        LocalDate date;
-        try {
-            date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
-
-            if (date.isBefore(LocalDate.now())) {
-                System.out.println("Вы не можете забронировать рабочее пространство на прошедшую дату.");
-                return;
-            }
-        } catch (DateTimeParseException e) {
-            System.out.println("Некорректный формат даты. Процесс создания брони прерван.");
+        LocalDate date = getDateInput();
+        if (date == null) {
             return;
         }
 
-        System.out.println(
-                "Вы хотите забронировать Индивидуальное рабочее место (I) или конференц зал(C)?"
-        );
-        String answer = ConsoleUtil.getInput(scan);
-        System.out.println("Введите номер нужного вам рабочего пространства:");
-        int workplaceID = scan.nextInt();
-        scan.nextLine();
+        System.out.println(MessageType.PROMPT_WORKPLACE_NUMBER.getMessage());
+        int workplaceID = ConsoleUtil.getInputInt(scan);
+        ConsoleUtil.getInput(scan);
 
-        System.out.println("""
-                Введите номер слота, который вы хотите забронировать и количество слотов.
-                Например, для брони с 9:00 до 13:00 необходимо ввести\s
-                2\s
-                4\
-                
-                2 - номер первого бронируемого слота, 4 - количество бронируемых слотов.""");
-        int slotNumber = scan.nextInt();
-        int numberOfSlots = scan.nextInt();
-        scan.nextLine();
+        System.out.println(MessageType.INSTRUCTION_FOR_SLOTS_PROMPT.getMessage());
+        int slotNumber = ConsoleUtil.getInputInt(scan);
+        int numberOfSlots = ConsoleUtil.getInputInt(scan);
+        ConsoleUtil.getInput(scan);
 
-        bookingService.createNewBooking(onlineUser, date, answer, workplaceID, slotNumber, numberOfSlots);
+        try {
+            bookingService.createNewBooking(onlineUser, date, workplaceID, slotNumber, numberOfSlots);
+            System.out.println(MessageType.BOOKING_SUCCESS.getMessage());
+        } catch (PersistException e) {
+            System.out.println(MessageType.BOOKING_CREATION_ERROR.getMessage() + e.getMessage());
+        } catch (SQLException | WrongDataException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
@@ -316,62 +352,123 @@ public class UserInputHandler {
      */
     public void deleteBooking(User onlineUser) {
         String userLogin;
-        if (onlineUser.role().equals(Role.ADMINISTRATOR)) {
-            System.out.println("Введите логин пользователя, чью бронь вы хотите удалить:");
+        if (Objects.equals(onlineUser.getRole(), Role.ADMINISTRATOR.name())) {
+            System.out.println(MessageType.PROMPT_LOGIN_BOOKING_DELETE.getMessage());
             userLogin = ConsoleUtil.getInput(scan);
-
-            if (!userDirectoryService.checkIsUserExist(userLogin)) {
-                System.out.println("Пользователь с таким логином не существует.");
-                return;
-            }
         } else {
-            userLogin = onlineUser.login();
+            userLogin = onlineUser.getLogin();
         }
 
-        System.out.println("Введите дату бронирования (формат ГГГГ-ММ-ДД):");
-        String dateInput = ConsoleUtil.getInput(scan);
-        LocalDate date;
-        try {
-            date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
-        } catch (DateTimeParseException e) {
-            System.out.println("Некорректный формат даты. Процесс удаления брони прерван.");
+        LocalDate date = getDateInput();
+        if (date == null) {
             return;
         }
 
-        bookingService.deleteBooking(userLogin, date);
+        try {
+            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), userRepository.getUsersByLogin(userLogin).get(0).getPK());
+            if (bookings == null) {
+                System.out.println(MessageType.BOOKING_SEARCH_ERROR.getMessage());
+                return;
+            }
 
-        System.out.println("Бронирование удалено.");
+            System.out.println(MessageType.LIST_OF_BOOKING.getMessage());
+            for (int i = 0; i < bookings.size(); i++) {
+                System.out.println((i + 1) + ". " + bookings.get(i));
+            }
+
+            System.out.println(MessageType.PROMPT_DELETING_BOOKING.getMessage());
+            int choice = Integer.parseInt(ConsoleUtil.getInput(scan));
+
+            bookingService.deleteBooking(onlineUser, userLogin, date.toString(), choice);
+        } catch (PersistException | WrongDataException e) {
+            System.out.println(MessageType.BOOKING_DELETE_ERROR.getMessage() + e.getMessage());
+        }
     }
 
     /**
      * Обрабатывает сортировку по дате.
      */
     private void handleSortedByDate() {
-        ConsoleUtil.printMessage(MessageType.DATE);
+        System.out.println(MessageType.PROMPT_DATE.getMessage());
         String dateInput = ConsoleUtil.getInput(scan);
         try {
             LocalDate date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
-            coworkingSpaceService.sortedByDate(date);
+            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(Date.valueOf(date), null);
+
+            if (bookings == null) {
+                System.out.println(MessageType.BOOKING_SEARCH_ERROR.getMessage());
+                return;
+            }
+
+            for (int i = 0; i < bookings.size(); i++) {
+                System.out.println((i + 1) + ". " + bookings.get(i));
+            }
+            System.out.println();
         } catch (DateTimeParseException e) {
-            System.out.println("Некорректный формат даты.");
+            System.out.println(MessageType.INCORRECT_DATE_ERROR.getMessage());
+        } catch (PersistException e) {
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Запрашивает логин пользователя для вывода списка всех броней, принадлежащих этому пользователю.
      */
-    public void getLoginForSearch() {
-        System.out.println("Введите логин пользователя, чьи брони вы хотите посмотреть:");
+    public void getLoginForSearch() throws PersistException {
+        System.out.println(MessageType.PROMPT_LOGIN_BOOKING_SEARCH.getMessage());
         getBookingByUserLogin(ConsoleUtil.getInput(scan));
     }
 
     /**
-     * Выводит список всех броней пользователя по его логину.
+     * Выводит список всех броней пользователя по его логину из базы данных.
      *
      * @param login логин пользователя
+     * @throws PersistException если возникает ошибка при работе с базой данных
      */
-    public void getBookingByUserLogin(String login) {
-        String bookings = bookingService.getBookingsByUser(login);
-        System.out.println(bookings);
+    public void getBookingByUserLogin(String login) throws PersistException {
+        try {
+            User user = userRepository.getUsersByLogin(login).get(0);
+
+            if (user == null) {
+                System.out.println(MessageType.LOGIN_NOT_FOUND_ERROR.getMessage());
+                return;
+            }
+
+            int userId = user.getPK();
+
+            List<Booking> bookings = bookingRepository.getBookingsByDateAndUser(null, userId);
+
+            if (bookings == null) {
+                System.out.println(MessageType.BOOKING_DOESNT_EXIST_ERROR.getMessage());
+            } else {
+                System.out.println(MessageType.LIST_OF_BOOKING.getMessage());
+                for (Booking booking : bookings) {
+                    System.out.println("Идентификатор брони: " + booking.getPK() + ", Дата брони: " + booking.getBookingDate());
+                }
+            }
+        } catch (PersistException e) {
+            System.out.println(MessageType.INTERNAL_ERROR.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Запрашивает дату у пользователя, обрабатывает ввод и возвращает LocalDate.
+     *
+     * @return введённая пользователем дата или null в случае некорректного ввода
+     */
+    private LocalDate getDateInput() {
+        System.out.println(MessageType.PROMPT_BOOKING_DATE.getMessage());
+        System.out.println(MessageType.PROMPT_DATE.getMessage());
+        String dateInput = ConsoleUtil.getInput(scan);
+
+        LocalDate date;
+        try {
+            date = LocalDate.parse(dateInput, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (DateTimeParseException e) {
+            System.out.println(MessageType.INCORRECT_DATE_ERROR.getMessage());
+            return null;
+        }
+        return date;
     }
 }

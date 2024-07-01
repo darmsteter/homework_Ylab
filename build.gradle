@@ -1,0 +1,89 @@
+plugins {
+    id 'application'
+    id 'org.liquibase.gradle' version '2.2.0'
+}
+
+ext {
+    liquibaseVersion = '4.24.0'
+    liquibaseGroovyDslVersion = '2.1.1'
+    picocliVersion = '4.7.5'
+    snakeyamlVersion = '2.0'
+    postgresqlVersion = '42.6.0'
+    junitJupiterVersion = '5.7.2'
+    junitPlatformVersion = '1.7.2'
+    mockitoVersion = '3.11.2'
+    testcontainersVersion = '1.16.0'
+
+    liquibaseRuntimeDependencies = [
+            "org.liquibase:liquibase-core:${liquibaseVersion}",
+            "org.liquibase:liquibase-groovy-dsl:${liquibaseGroovyDslVersion}",
+            "info.picocli:picocli:${picocliVersion}",
+            "org.yaml:snakeyaml:${snakeyamlVersion}",
+            "org.postgresql:postgresql:${postgresqlVersion}"
+    ]
+    implementationDependencies = [
+            "org.postgresql:postgresql:${postgresqlVersion}"
+    ]
+    runtimeOnlyDependencies = [
+            "org.postgresql:postgresql:${postgresqlVersion}"
+    ]
+    testImplementationDependencies = [
+            "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
+            "org.mockito:mockito-core:${mockitoVersion}",
+            "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+            "org.testcontainers:testcontainers:${testcontainersVersion}",
+            "org.testcontainers:junit-jupiter:${testcontainersVersion}",
+            "org.testcontainers:postgresql:${testcontainersVersion}"
+    ]
+    testRuntimeOnlyDependencies = [
+            "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}"
+    ]
+}
+
+dependencies {
+    liquibaseRuntime liquibaseRuntimeDependencies
+    implementation implementationDependencies
+    runtimeOnly runtimeOnlyDependencies
+    testImplementation testImplementationDependencies
+    testRuntimeOnly testRuntimeOnlyDependencies
+}
+
+apply plugin: 'org.liquibase.gradle'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+application {
+    mainClass = 'com.coworking_service.Main'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
+liquibase {
+    activities {
+        register("createSchemas") {
+            arguments = [
+                    changeLogFile: 'docker/src/main/resources/db/changelog/00-create-schemas-and-sequence.xml',
+                    url: 'jdbc:postgresql://localhost:5432/coworking_service',
+                    username: 'user',
+                    password: '12345'
+            ]
+        }
+        register("main") {
+            arguments = [
+                    changeLogFile: 'docker/src/main/resources/db/changelog/db.changelog.xml',
+                    url: 'jdbc:postgresql://localhost:5432/coworking_service',
+                    username: 'user',
+                    password: '12345',
+                    defaultSchemaName: 'ServiceTables',
+                    liquibaseSchemaName: 'ServiceTables',
+                    liquibaseCatalogName: 'ServiceTables'
+            ]
+        }
+    }
+}

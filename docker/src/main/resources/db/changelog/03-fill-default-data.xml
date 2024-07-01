@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="fill_admin_user" author="svetlana koreneva">
+        <insert schemaName="Coworking" tableName="coworking_user">
+            <column name="login" value="admin"/>
+            <column name="password" value="admin"/>
+            <column name="role" value="ADMINISTRATOR"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="fill_workplaces" author="svetlana koreneva">
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="1"/>
+            <column name="workplace_type" value="individual"/>
+        </insert>
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="1"/>
+            <column name="workplace_type" value="individual"/>
+        </insert>
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="1"/>
+            <column name="workplace_type" value="individual"/>
+        </insert>
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="1"/>
+            <column name="workplace_type" value="individual"/>
+        </insert>
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="1"/>
+            <column name="workplace_type" value="individual"/>
+        </insert>
+
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="3"/>
+            <column name="workplace_type" value="conference"/>
+        </insert>
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="5"/>
+            <column name="workplace_type" value="conference"/>
+        </insert>
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="7"/>
+            <column name="workplace_type" value="conference"/>
+        </insert>
+        <insert schemaName="Coworking" tableName="workplace">
+            <column name="maximum_capacity" value="8"/>
+            <column name="workplace_type" value="conference"/>
+        </insert>
+
+    </changeSet>
+</databaseChangeLog>

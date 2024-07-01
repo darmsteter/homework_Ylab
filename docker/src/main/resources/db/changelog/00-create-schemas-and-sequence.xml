@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="create-schemas" author="svetlana koreneva">
+        <sql>CREATE SCHEMA IF NOT EXISTS "ServiceTables";</sql>
+        <sql>CREATE SCHEMA IF NOT EXISTS "Coworking";</sql>
+    </changeSet>
+
+    <changeSet id="add-seq_user" author="svetlana koreneva">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="seq_user_id"/>
+            </not>
+        </preConditions>
+
+        <createSequence
+                dataType="int"
+                incrementBy="1"
+                schemaName="Coworking"
+                sequenceName="seq_user_id"
+                startValue="1"/>
+    </changeSet>
+
+    <changeSet id="add-seq_booking" author="svetlana koreneva">
+    <preConditions onFail="MARK_RAN">
+        <not>
+            <sequenceExists sequenceName="seq_booking_id"/>
+        </not>
+    </preConditions>
+
+    <createSequence
+            dataType="int"
+            incrementBy="1"
+            schemaName="Coworking"
+            sequenceName="seq_booking_id"
+            startValue="1"/>
+    </changeSet>
+
+    <changeSet id="add-seq_workplace" author="svetlana koreneva">
+    <preConditions onFail="MARK_RAN">
+        <not>
+            <sequenceExists sequenceName="seq_workplace_id"/>
+        </not>
+    </preConditions>
+
+    <createSequence
+            dataType="int"
+            incrementBy="1"
+            schemaName="Coworking"
+            sequenceName="seq_workplace_id"
+            startValue="1"/>
+    </changeSet>
+
+</databaseChangeLog>

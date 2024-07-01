@@ -1,37 +1,26 @@
 package com.coworking_service.service.interfaces;
 
-import com.coworking_service.util.Pair;
-
-import java.time.LocalDate;
+import java.sql.Time;
 
 /**
  * Интерфейс для управления временными интервалами (слотами).
  */
 public interface SlotService {
+    /**
+     * Рассчитывает время начала бронирования для указанного номера слота.
+     *
+     * @param slotNumber номер слота
+     * @return время начала бронирования в формате {@link Time}
+     */
+    Time calculateBookingTimeFrom(int slotNumber);
 
     /**
-     * Генерирует массив пар, представляющих слоты времени и их доступность.
+     * Рассчитывает время окончания бронирования для указанного номера слота и количества слотов.
      *
-     * @param date дата бронирования
-     * @return массив пар слотов времени и их доступности
+     * @param slotNumber    номер слота
+     * @param numberOfSlots количество слотов
+     * @return время окончания бронирования в формате {@link Time}
      */
-    Pair<String, Boolean>[] generateSlots(LocalDate date);
+    Time calculateBookingTimeTo(int slotNumber, int numberOfSlots);
 
-    /**
-     * Проверяет доступность слота по индексу.
-     *
-     * @param slots массив слотов
-     * @param index индекс слота
-     * @return true если слот доступен, false если занят
-     */
-    boolean isSlotAvailable(Pair<String, Boolean>[] slots, int index);
-
-    /**
-     * Устанавливает доступность слота по индексу.
-     *
-     * @param slots массив слотов
-     * @param index индекс слота
-     * @param available доступность слота (true если доступен, false если занят)
-     */
-    void setSlotAvailability(Pair<String, Boolean>[] slots, int index, boolean available);
 }

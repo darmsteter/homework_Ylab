@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="create_coworking_user_table" author="svetlana koreneva">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="coworking_user"/>
+            </not>
+        </preConditions>
+
+        <createTable schemaName="Coworking" tableName="coworking_user">
+            <column name="id" type="INT" defaultValueComputed="nextval('&quot;Coworking&quot;.seq_user_id')">
+                <constraints primaryKey="true"
+                             primaryKeyName="coworking_user_pkey"
+                             nullable="false"/>
+            </column>
+            <column name="login" type="VARCHAR"/>
+            <column name="password" type="VARCHAR"/>
+            <column name="role" type="VARCHAR"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create_workplace" author="svetlana koreneva">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="workplace"/>
+            </not>
+        </preConditions>
+
+        <createTable schemaName="Coworking" tableName="workplace">
+            <column name="workplace_id" type="INT" defaultValueComputed="nextval('&quot;Coworking&quot;.seq_workplace_id')">
+                <constraints primaryKey="true"
+                             primaryKeyName="workplace_pkey"
+                             nullable="false"/>
+            </column>
+            <column name="maximum_capacity" type="INT"/>
+            <column name="workplace_type" type="VARCHAR"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create_booking" author="svetlana koreneva">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="booking"/>
+            </not>
+        </preConditions>
+
+        <createTable schemaName="Coworking" tableName="booking">
+            <column name="booking_id" type="INT" defaultValueComputed="nextval('&quot;Coworking&quot;.seq_booking_id')">
+                <constraints primaryKey="true"
+                             primaryKeyName="booking_pkey"
+                             nullable="false"/>
+            </column>
+            <column name="user_id" type="INT"/>
+            <column name="workplace_id" type="INT"/>
+            <column name="booking_date" type="DATE"/>
+            <column name="booking_time_from" type="TIME"/>
+            <column name="booking_time_to" type="TIME"/>
+
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
