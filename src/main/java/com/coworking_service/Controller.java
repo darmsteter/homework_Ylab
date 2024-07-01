@@ -14,12 +14,22 @@ import java.util.List;
  * Контроллер для управления консольным интерфейсом приложения коворкинг-сервиса.
  */
 public class Controller {
-    private final UserInputHandler userInputHandler = new UserInputHandler();
-    private final UserOutputHandler userOutputHandler = new UserOutputHandler(
-            userInputHandler
-    );
+    private UserInputHandler userInputHandler = new UserInputHandler();
+    private UserOutputHandler userOutputHandler = new UserOutputHandler(userInputHandler);
+    private UserRepository userRepository = new UserRepository();
 
-    private final UserRepository userRepository = new UserRepository();
+    public void setUserInputHandler(UserInputHandler userInputHandler) {
+        this.userInputHandler = userInputHandler;
+        this.userOutputHandler = new UserOutputHandler(userInputHandler);
+    }
+
+    public void setUserOutputHandler(UserOutputHandler userOutputHandler) {
+        this.userOutputHandler = userOutputHandler;
+    }
+
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Запускает консольное приложение.
@@ -56,5 +66,4 @@ public class Controller {
             }
         }
     }
-
 }

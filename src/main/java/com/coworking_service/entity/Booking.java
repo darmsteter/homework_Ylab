@@ -31,8 +31,22 @@ public record Booking(Integer bookingId,
         return bookingId;
     }
 
+    /**
+     * Возвращает дату бронирования.
+     *
+     * @return дата бронирования
+     */
     public Date getBookingDate() {
         return bookingDate;
+    }
+
+    /**
+     * Возвращает уникальный идентификатор пользователя, который создал бронь.
+     *
+     * @return уникальный идентификатор пользователя
+     */
+    public Integer getUserId() {
+        return userId;
     }
 
     @Override
